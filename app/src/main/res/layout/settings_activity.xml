@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="vertical"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+>
+	<TextView
+		android:id="@+id/testTextView"
+		android:gravity="center"
+		android:background="@drawable/ripple_normal"
+		android:clickable="true"
+		android:layout_width="match_parent"
+		android:layout_height="64dp"
+	/>
+<!--	<ImageView-->
+<!--		android:src="@drawable/shift"-->
+<!--		android:layout_width="256dp"-->
+<!--		android:layout_height="128dp"-->
+<!--	/>-->
+	<FrameLayout
+		android:id="@+id/settingsFrameLayout"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+	/>
+</LinearLayout>
