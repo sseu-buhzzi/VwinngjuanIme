@@ -1,16 +1,16 @@
 plugins {
-	id("com.android.application")
-	id("org.jetbrains.kotlin.android")
+	alias(libs.plugins.android.application)
+	alias(libs.plugins.kotlin.android)
 }
 
 android {
-	namespace = "com.buhzzi.vwinngjuan_ime"
-	compileSdk = 34
+	namespace = "com.buhzzi.vwinngjuanime"
+	compileSdk = 35
 
 	defaultConfig {
-		applicationId = "com.buhzzi.vwinngjuan_ime"
-		minSdk = 31
-		targetSdk = 34
+		applicationId = "com.buhzzi.vwinngjuanime"
+		minSdk = 34
+		targetSdk = 35
 		versionCode = 1
 		versionName = "1.0"
 
@@ -20,26 +20,48 @@ android {
 	buildTypes {
 		release {
 			isMinifyEnabled = false
-			proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+			proguardFiles(
+				getDefaultProguardFile("proguard-android-optimize.txt"),
+				"proguard-rules.pro"
+			)
 		}
 	}
 	compileOptions {
-		sourceCompatibility = JavaVersion.VERSION_1_8
-		targetCompatibility = JavaVersion.VERSION_1_8
+		sourceCompatibility = JavaVersion.VERSION_11
+		targetCompatibility = JavaVersion.VERSION_11
 	}
 	kotlinOptions {
-		jvmTarget = "1.8"
+		jvmTarget = "11"
+	}
+
+	buildFeatures {
+		compose = true
+	}
+	composeOptions {
+		kotlinCompilerExtensionVersion = "1.5.14"
 	}
 }
 
 dependencies {
 
-	//noinspection GradleDependency
-	implementation("androidx.core:core-ktx:1.13.0")
-	implementation("androidx.appcompat:appcompat:1.7.0")
-	implementation("com.google.android.material:material:1.12.0")
-	implementation("androidx.preference:preference-ktx:1.2.1")
-	testImplementation("junit:junit:4.13.2")
-	androidTestImplementation("androidx.test.ext:junit:1.2.1")
-	androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+	implementation(libs.androidx.core.ktx)
+	implementation(libs.androidx.appcompat)
+	implementation(libs.material)
+
+	implementation(libs.androidx.activity.compose)
+	implementation(libs.androidx.material)
+	implementation(libs.androidx.material.icons.extended)
+	implementation(libs.androidx.ui)
+	implementation(libs.androidx.ui.tooling)
+	implementation(libs.androidx.ui.tooling.preview)
+	implementation(libs.androidx.navigation.compose)
+	implementation(libs.androidx.lifecycle.common.java8)
+	implementation(libs.androidx.lifecycle.runtime.ktx)
+	implementation(libs.androidx.lifecycle.lifecycle.service)
+	implementation(libs.androidx.lifecycle.viewmodel.ktx)
+	implementation(libs.androidx.savedstate)
+
+	testImplementation(libs.junit)
+	androidTestImplementation(libs.androidx.junit)
+	androidTestImplementation(libs.androidx.espresso.core)
 }

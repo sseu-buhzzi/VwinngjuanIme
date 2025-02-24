@@ -1,0 +1,16 @@
+<resources>
+	<string name="navigator_plane">導航</string>
+	<string name="navigator_im_picker">擇輸入法</string>
+	<string name="navigator_go_back">退</string>
+	<string name="editor_plane">輯</string>
+	<string name="clipboard_plane">割簿</string>
+	<string name="clipboard_select_all">盡選</string>
+	<string name="clipboard_cut">割</string>
+	<string name="clipboard_copy">謄</string>
+	<string name="clipboard_paste">置</string>
+	<string name="clipboard_backspace">退格</string>
+	<string name="qwerty_plane" translatable="false">QWERTY</string>
+	<string name="vwinngjuan_plane">文字</string>
+	<string name="kana_plane">假名</string>
+	<string name="kana_specials_plane">假名 附</string>
+</resources>
