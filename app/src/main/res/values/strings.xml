@@ -1,28 +1,3 @@
 <resources>
 	<string name="app_name">文元鍵盤</string>
-	<string name="app_name_latin">Latin Alphabet</string>
-	<string name="app_name_ja_kata">日本假名</string>
-
-	<string name="im_settings_key">im_settings</string>
-	<string name="im_settings_title">Input Method Settings</string>
-	<string name="im_settings_summary">Go to settings for input methods</string>
-
-	<string name="im_picker_key">im_picker</string>
-	<string name="im_picker_title">Input Method Picker</string>
-	<string name="im_picker_summary">Pick an input method</string>
-	<string name="im_picker_unavailable">No input method picker available on this device.</string>
-
-	<string name="night_mode_key">night_mode</string>
-	<string name="night_mode_title">Mode Night</string>
-	<string name="night_mode_summary">Current: %s</string>
-	<string-array name="night_mode_entries">
-		<item>Follow System</item>
-		<item>Day Mode</item>
-		<item>Night Mode</item>
-		<item>Auto Battery</item>
-	</string-array>
-
-	<string name="kb_height_key">kb_height</string>
-	<string name="kb_height_title">Keyboard Height</string>
-	<string name="kb_height_summary">Current: %d px</string>
 </resources>

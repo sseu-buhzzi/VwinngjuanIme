@@ -1,0 +1,160 @@
+package com.buhzzi.vwinngjuanime.keyboards
+
+import android.os.VibrationEffect
+import android.os.Vibrator
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Icon
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.AwaitPointerEventScope
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChanged
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.util.fastAny
+import com.buhzzi.vwinngjuanime.VwinngjuanIms
+
+const val LONG_PRESS_TIMEOUT = 0x200L
+const val REPEAT_INTERVAL = 0x20L
+
+internal class Plane(
+	val nameGetter: @Composable () -> String,
+	val composableFunction: @Composable (ims: VwinngjuanIms) -> Unit,
+) {
+	val name
+		@Composable
+		get() = nameGetter()
+}
+
+@Composable
+internal inline fun OutlinedSpace(
+	modifier: Modifier = Modifier,
+	crossinline content: @Composable () -> Unit,
+) {
+	Surface(
+		modifier.fillMaxSize(),
+		border = ButtonDefaults.outlinedBorder,
+	) {
+		content()
+	}
+}
+
+internal enum class PointerStatus {
+	// To click down, is to put the pointer down and keep not moving it.
+	HELD,
+	RELEASED,
+	MOVED,
+}
+
+internal suspend fun AwaitPointerEventScope.awaitPointerStatus() =
+	awaitPointerEvent().changes.run {
+		when {
+			!fastAny { it.pressed } -> PointerStatus.RELEASED
+			fastAny { it.positionChanged() } -> PointerStatus.MOVED
+			else -> PointerStatus.HELD
+		}
+	}
+		.also {
+//			println("await   $it")
+		}
+
+internal suspend fun AwaitPointerEventScope.timeoutPointerStatus(time: Long) =
+	/*
+		null -> false (timed out)
+		break -> true (released or moved)
+	 */
+	withTimeoutOrNull(time) {
+		var lastStatus: PointerStatus
+		do {
+			lastStatus = awaitPointerStatus()
+		} while (lastStatus == PointerStatus.HELD)
+		lastStatus
+			.also {
+//				println("timeout $it")
+			}
+	}.also {
+//		it ?: println("timeout ${null}")
+	}
+
+private fun VwinngjuanIms.vibrate() {
+	getSystemService(Vibrator::class.java).vibrate(
+		VibrationEffect.createOneShot(0x20, 255)
+	)
+}
+
+@Composable
+internal inline fun OutlinedClickable(
+	ims: VwinngjuanIms,
+	crossinline action: VwinngjuanIms.() -> Unit,
+	modifier: Modifier = Modifier,
+	keysPointerInput: Array<Any?> = arrayOf(Unit),
+	crossinline content: @Composable () -> Unit,
+) {
+	OutlinedSpace(modifier
+		.clickable { }
+		.pointerInput(keys = keysPointerInput) {
+			awaitPointerEventScope {
+				while (true) {
+					awaitPointerStatus() == PointerStatus.HELD || continue
+					when (timeoutPointerStatus(LONG_PRESS_TIMEOUT)) {
+						PointerStatus.RELEASED -> {
+//							println("action once")
+							ims.action()
+							ims.vibrate()
+							continue
+						}
+
+						PointerStatus.MOVED -> continue
+
+						else -> {
+							do {
+//								println("action repeat")
+								ims.action()
+								ims.vibrate()
+							} while (timeoutPointerStatus(REPEAT_INTERVAL)?.equals(PointerStatus.HELD) != false)
+						}
+					}
+				}
+			}
+		},
+	) { content() }
+}
+
+internal class KeyContent(
+	val desc: String?,
+	val icon: ImageVector?,
+) {
+	constructor(desc: String) : this(desc, null)
+
+	constructor(icon: ImageVector) : this(null, icon)
+
+	override fun toString() = "KeyContent($desc, $icon)"
+}
+
+@Composable
+internal inline fun OutlinedKey(
+	ims: VwinngjuanIms,
+	content: KeyContent,
+	modifier: Modifier = Modifier,
+	keysPointerInput: Array<Any?> = arrayOf(Unit),
+	crossinline action: VwinngjuanIms.() -> Unit,
+) {
+	OutlinedClickable(ims, action, modifier, keysPointerInput) {
+		Column(
+			verticalArrangement = Arrangement.Center,
+			horizontalAlignment = Alignment.CenterHorizontally
+		) {
+			content.apply {
+				icon?.also { Icon(it, desc) }
+				desc?.also { Text(it, textAlign = TextAlign.Center) }
+			}
+		}
+	}
+}
