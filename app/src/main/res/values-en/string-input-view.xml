@@ -1,0 +1,15 @@
+<resources>
+	<string name="navigator_plane">Navigator</string>
+	<string name="navigator_im_picker">IM Picker</string>
+	<string name="navigator_go_back">Go Back</string>
+	<string name="editor_plane">Editor</string>
+	<string name="clipboard_plane">Clipboard</string>
+	<string name="clipboard_select_all">Select All</string>
+	<string name="clipboard_cut">Cut</string>
+	<string name="clipboard_copy">Copy</string>
+	<string name="clipboard_paste">Paste</string>
+	<string name="clipboard_backspace">Backspace</string>
+	<string name="vwinngjuan_plane">Vwin Tzuih</string>
+	<string name="kana_plane">Kana</string>
+	<string name="kana_specials_plane">Kana Specials</string>
+</resources>
