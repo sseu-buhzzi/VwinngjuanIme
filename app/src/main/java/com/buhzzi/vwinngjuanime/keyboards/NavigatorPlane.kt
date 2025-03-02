@@ -29,13 +29,20 @@ import com.buhzzi.vwinngjuanime.keyboards.latin.qwertyPlane
 import com.buhzzi.vwinngjuanime.keyboards.tzuih.vwinngjuanPlane
 
 internal fun VwinngjuanIms.planeGoBack() {
-	planeStack.takeIf { it.size > 1 }?.removeLastOrNull()
+	planeStack.apply {
+		if (size > 1) {
+			removeLastOrNull()!!.finish(this@planeGoBack)
+		}
+	}
 }
 
 internal fun VwinngjuanIms.goToPlane(plane: Plane) {
-	planeStack.takeIf { it.size > 1 }?.apply {
-		remove(plane)
-		add(plane)
+	currentPlane.finish(this)
+	planeStack.apply {
+		if (size > 1) {
+			remove(plane)
+			add(plane)
+		}
 	}
 }
 

@@ -28,10 +28,12 @@ import com.buhzzi.vwinngjuanime.keyboards.OutlinedKey
 import com.buhzzi.vwinngjuanime.keyboards.OutlinedSpace
 import com.buhzzi.vwinngjuanime.keyboards.Plane
 import com.buhzzi.vwinngjuanime.keyboards.commitText
+import com.buhzzi.vwinngjuanime.keyboards.goToPlane
 import com.buhzzi.vwinngjuanime.keyboards.latin.BackspaceKey
 import com.buhzzi.vwinngjuanime.keyboards.latin.CtrlKey
 import com.buhzzi.vwinngjuanime.keyboards.latin.MetaKey
 import com.buhzzi.vwinngjuanime.keyboards.latin.SpaceKey
+import com.buhzzi.vwinngjuanime.keyboards.planeGoBack
 
 private enum class KanaType {
 	HIRAGANA,
@@ -132,7 +134,7 @@ private fun SpecialsKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
 		KeyContent(Icons.Filled.EmojiSymbols),
 		modifier,
 	) {
-		planeStack.add(kanaSpecialsPlane)
+		goToPlane(kanaSpecialsPlane)
 	}
 }
 
@@ -448,7 +450,7 @@ internal val kanaSpecialsPlane = Plane({ stringResource(R.string.kana_specials_p
 					KeyContent(Icons.AutoMirrored.Filled.ArrowBackIos),
 					Modifier.weight(1F),
 				) {
-					planeStack.removeLastOrNull() ?: planeStack.add(kanaPlane)
+					planeGoBack()
 				}
 				OutlinedSpace(Modifier.weight(5F)) {
 					LazyRow {

@@ -56,6 +56,7 @@ import com.buhzzi.vwinngjuanime.keyboards.Plane
 import com.buhzzi.vwinngjuanime.keyboards.PlaneGoBackKey
 import com.buhzzi.vwinngjuanime.keyboards.backspaceText
 import com.buhzzi.vwinngjuanime.keyboards.commitText
+import com.buhzzi.vwinngjuanime.keyboards.planeGoBack
 import com.buhzzi.vwinngjuanime.toBytes
 import java.math.BigInteger
 
@@ -297,7 +298,9 @@ internal inline fun ClipDataRow(
 		) {
 			select()
 		}
-		OutlinedClickable(ims, { commitText(text) }, Modifier.weight(1F)) {
+		OutlinedClickable(ims, { commitText(text) }, Modifier.weight(1F),
+			movedThreshold = 0F
+		) {
 			Box(Modifier.fillMaxSize(), Alignment.CenterStart) {
 				Text(text,
 					overflow = TextOverflow.Ellipsis,
@@ -409,7 +412,7 @@ internal val clipboardPlane = Plane({ stringResource(R.string.clipboard_plane) }
 				ims,
 				KeyContent("No clip", Icons.Filled.Close),
 			) {
-				planeStack.removeLastOrNull()
+				planeGoBack()
 			}
 		}
 	}
