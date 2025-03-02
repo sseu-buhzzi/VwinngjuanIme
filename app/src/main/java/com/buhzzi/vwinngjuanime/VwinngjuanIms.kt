@@ -2,26 +2,15 @@ package com.buhzzi.vwinngjuanime
 
 import android.content.Intent
 import android.inputmethodservice.InputMethodService
-import android.os.VibrationEffect
-import android.os.Vibrator
 import android.view.inputmethod.EditorInfo
 import androidx.annotation.CallSuper
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.navigationBarsIgnoringVisibility
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.AbstractComposeView
@@ -37,8 +26,6 @@ import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
-import com.buhzzi.vwinngjuanime.keyboards.OutlinedSpace
-import com.buhzzi.vwinngjuanime.keyboards.latin.qwertyPlane
 import com.buhzzi.vwinngjuanime.keyboards.navigatorPlane
 import com.buhzzi.vwinngjuanime.keyboards.tzuih.vwinngjuanPlane
 
@@ -101,7 +88,7 @@ internal class VwinngjuanIms : ComposeInputMethodService() {
 				Column(Modifier.height(0x140.dp)) {
 //					item {
 					Box(Modifier.safeDrawingPadding()) {
-						planeStack.last().composableFunction(this@VwinngjuanIms)
+						currentPlane.composableFunction(this@VwinngjuanIms)
 					}
 //						Text("0\n1\n2\n3\n4\n5\n6\n7\n8\n9\na\nb\nc\nd\ne\nf\n", Modifier.background(Color.Gray).fillMaxWidth())
 //					}
@@ -109,10 +96,6 @@ internal class VwinngjuanIms : ComposeInputMethodService() {
 				}
 			}
 		}
-	}
-
-	override fun onCreateCandidatesView() = run {
-		super.onCreateCandidatesView()
 	}
 
 	override fun onStartInputView(attribute: EditorInfo?, restarting: Boolean) {
@@ -127,16 +110,18 @@ internal class VwinngjuanIms : ComposeInputMethodService() {
 //		window.window?.isNavigationBarContrastEnforced = false
 	}
 
-	override fun onFinishInput() {
-		super.onFinishInput()
-	}
+	override fun onUnbindInput() {
+		currentPlane.finish(this)
 
-	override fun onDestroy() {
-		super.onDestroy()
+		super.onUnbindInput()
 	}
 
 	var planeStack = mutableStateListOf(navigatorPlane, vwinngjuanPlane)
 
+	val currentPlane
+		get() = planeStack.last()
+
 	var inputType by mutableIntStateOf(EditorInfo.TYPE_NULL)
+
 	var imeOptions by mutableIntStateOf(EditorInfo.IME_NULL)
 }

@@ -34,59 +34,18 @@ import com.buhzzi.vwinngjuanime.keyboards.latin.CtrlKey
 import com.buhzzi.vwinngjuanime.keyboards.latin.MetaKey
 import com.buhzzi.vwinngjuanime.keyboards.latin.SpaceKey
 import com.buhzzi.vwinngjuanime.keyboards.latin.TabKey
+import java.nio.file.Path
 import kotlin.io.path.div
-import kotlin.io.path.reader
+import kotlin.io.path.useLines
+import kotlin.system.exitProcess
 
-private class LejKeyAction(
-	val content: KeyContent,
-	val action: VwinngjuanIms.() -> Unit,
-) {
-	override fun toString() = "LejKeyAction($content)"
+internal fun <T> Path.useTsv(block: Sequence<List<String>>.() -> T) = useLines { lines ->
+	lines
+		.filter { it.isNotEmpty() && !it.startsWith('#') }
+		.map { it.split('\t') }
+		.block()
 }
 
-private val defaultMappedChars = listOf(
-	'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p',
-	'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l',
-	'z', 'x', 'c', 'v', 'b', 'n', 'm',
-)
-
-private fun generateKeyMapFromPattern(
-	keyActions: Iterable<LejKeyAction>,
-	pattern: String,
-	mappedChars: List<Char> = defaultMappedChars,
-): Map<Char, LejKeyAction> = run {
-	val hasAction = pattern.mapNotNull { when (it) {
-		'-' -> false
-		'+' -> true
-		else -> null
-	} }
-	val keyActionIterator = keyActions.iterator()
-	mappedChars.indices.associate { charIndex ->
-		mappedChars[charIndex] to
-			if (hasAction[charIndex]) keyActionIterator.next()
-			else LejKeyAction(KeyContent("")) { }
-	}.also {
-		keyActionIterator.hasNext() && error("Didn't consume all keyActions.")
-	}
-}
-
-private val lejKeyMap: Map<Char, LejKeyAction> = generateKeyMapFromPattern(lejList.fastMapIndexed { lejIndex, lejInfo ->
-	LejKeyAction(KeyContent(lejInfo.label)) { keyMap = vwinKeyMapList[lejIndex] }
-}, lejKeyMapPattern)
-
-private val vwinKeyMapList = lejList.fastMap { lej ->
-	generateKeyMapFromPattern(lej.vwinList.fastMap { vwin ->
-		LejKeyAction(vwin.druann
-			?.let { KeyContent(druannIcon(it)) }
-			?: KeyContent(vwin.label)
-		) {
-			composingVwinStack.push(vwin)
-			keyMap = lejKeyMap
-		}
-	}, lej.keyMapPattern)
-}
-
-private var keyMap: Map<Char, LejKeyAction> by mutableStateOf(lejKeyMap)
 
 
 
@@ -94,14 +53,13 @@ private var keyMap: Map<Char, LejKeyAction> by mutableStateOf(lejKeyMap)
 
 
 
-private class TzhuNode private constructor(
+private class TzhuNode(
 	val parent: TzhuNode?,
 	val code: Int,
 ) {
-	val children = arrayOfNulls<TzhuNode>(vwinTable.size)
+	val children by lazy { arrayOfNulls<TzhuNode>(tzhuComposer.fullVwinList.size) }
 
 	var tzuihUni: String? = null
-		private set
 
 	val path
 		get() = run {
@@ -116,60 +74,131 @@ private class TzhuNode private constructor(
 		}
 
 	override fun toString() = """TzhuNode($tzuihUni, "${
-		path.fastJoinToString(" ") { "$it/${vwinTable[it].label}" }
+		path.fastJoinToString(" ") { "$it/${tzhuComposer.fullVwinList[it].label}" }
 	}")"""
 
 	fun createChild(code: Int) = TzhuNode(this, code).also {
 		children[code] = it
 	}
+}
 
-	fun getChildOf(vwin: VwinInfo) = children[vwinCodeMap[vwin.label]!!]
+private val VwinngjuanIms.vwinngjuanFilesPath
+	get() = getExternalFilesDir("vwinngjuan")?.toPath()
+		?: error("Cannot open vwinngjuan files dir.")
 
-	companion object {
-		val vwinTable = lejList.fastFlatMap { it.vwinList }
+private class TzhuComposer(ims: VwinngjuanIms) {
+	val lejList: List<LejInfo> = (ims.vwinngjuanFilesPath / "lej.tsv").useTsv {
+		map { (lej, vwinList) ->
+			val keyMapPattern = lejKeyMapPatternMap[lej] ?: error("Cannot find key map pattern for lej $lej.")
+			LejInfo(lej, keyMapPattern, vwinList.split(' ').fastMap { vwinLabel ->
+				VwinInfo(vwinLabel, druannMap[vwinLabel])
+			})
+		}.toList()
+	}
 
-		val vwinCodeMap = vwinTable.withIndex().associate { (code, vwin) -> vwin.label to code }
 
-		val root = TzhuNode(null, 0)
+	val lejKeyMap: Map<Char, LejKeyAction> = generateKeyMapFromPattern(lejList.fastMapIndexed { lejIndex, lejInfo ->
+		LejKeyAction(KeyContent(lejInfo.label.run {
+			substring(0, offsetByCodePoints(0, 1))
+		})) { keyMap = vwinKeyMapList[lejIndex] }
+	}, LEJ_KEY_MAP_PATTERN)
+		.also { keyMap = it }
 
-		fun clear() {
-			root.children.fill(null)
-		}
-
-		fun createOnPath(path: List<Int>, tzuihUni: String) {
-			var node = root
-			path.fastForEachIndexed { i, code ->
-				val child = node.children[code]
-				when {
-					i != path.lastIndex ->
-						node = child ?: node.createChild(code)
-					child != null -> {
-						child.tzuihUni == null || error("Duplicated tzuih $tzuihUni on ${node.children[code]}.")
-						child.tzuihUni = tzuihUni
-					}
-					else ->
-						node.createChild(code).tzuihUni = tzuihUni
+	val vwinKeyMapList = lejList.fastMap { lej ->
+		// TODO 移除try-catch塊。
+		try {
+			generateKeyMapFromPattern(lej.vwinList.fastMap { vwin ->
+				LejKeyAction(vwin.druann
+					?.let { KeyContent(druannIcon(it)) }
+					?: KeyContent(vwin.label)
+				) {
+					composingVwinStack.push(vwin)
+					keyMap = lejKeyMap
 				}
-			}
-		}
-
-		fun sync(ims: VwinngjuanIms) {
-			clear()
-			val tzhuMap = (ims.getExternalFilesDir("vwinngjuan")!!.toPath() / "tzhu.tsv").reader().useLines { lines ->
-				lines.associate { line ->
-					val (tzuihUni, tzhu) = line.split('\t', limit = 2)
-					tzuihUni to (tzhu.takeIf { it.isNotEmpty() }?.split(' ') ?: emptyList())
-				}
-			}
-			val nodeMap = mutableMapOf<String, List<Int>>()
-			fun resolveNodePath(tzuihUni: String): List<Int> = nodeMap.getOrPut(tzuihUni) {
-				(vwinCodeMap[tzuihUni]?.let { listOf(it) } ?: tzhuMap[tzuihUni]!!.fastFlatMap { resolveNodePath(it) })
-					.also { createOnPath(it, tzuihUni) }
-			}
-			tzhuMap.keys.forEach { tzuihUni -> resolveNodePath(tzuihUni) }
+			}, lej.keyMapPattern)
+		} catch (e: Exception) {
+			println("Error on ${lej.label}, ${lej.vwinList.size}/${lej.keyMapPattern.count { it == KeyMapPatternChar.ACTIVE }}")
+			exitProcess(-1)
 		}
 	}
+
+
+	val fullVwinList = lejList.fastFlatMap { it.vwinList }
+
+	val vwinCodeMap = fullVwinList.withIndex().associate { (code, vwin) -> vwin.label to code }
+
+	init {
+		tzhuComposer = this
+	}
+
+	val root = TzhuNode(null, 0)
+
+	fun generateKeyMapFromPattern(
+		keyActions: Iterable<LejKeyAction>,
+		pattern: String,
+		mappedChars: List<Char> = defaultMappedChars,
+	): Map<Char, LejKeyAction> = run {
+		val hasAction = pattern.mapNotNull { when (it) {
+			KeyMapPatternChar.INACTIVE -> false
+			KeyMapPatternChar.ACTIVE -> true
+			else -> null
+		} }
+		val keyActionIterator = keyActions.iterator()
+		mappedChars.indices.associate { charIndex ->
+			mappedChars[charIndex] to
+				if (hasAction[charIndex]) keyActionIterator.next()
+				else LejKeyAction(KeyContent("")) { }
+		}.also {
+			keyActionIterator.hasNext() && error("Didn't consume all keyActions.")
+		}
+	}
+
+	fun createOnPath(path: List<Int>, tzuihUni: String) {
+		var node = root
+		path.fastForEachIndexed { i, code ->
+			val child = node.children[code]
+			when {
+				i != path.lastIndex ->
+					node = child ?: node.createChild(code)
+				child != null -> {
+					child.tzuihUni == null || error("Duplicated tzuih $tzuihUni on ${node.children[code]}.")
+					child.tzuihUni = tzuihUni
+				}
+				else ->
+					node.createChild(code).tzuihUni = tzuihUni
+			}
+		}
+	}
+
+	init {
+		val tzhuMap = (ims.vwinngjuanFilesPath / "tzhu.tsv").useTsv {
+			associate { (tzuihUni, tzhu) ->
+				tzuihUni to (tzhu.takeIf { it.isNotEmpty() }?.split(' ') ?: emptyList())
+			}
+		}
+		val nodeMap = mutableMapOf<String, List<Int>>()
+		fun resolveNodePath(tzuihUni: String): List<Int> = nodeMap.getOrPut(tzuihUni) {
+			(vwinCodeMap[tzuihUni]?.let { listOf(it) } ?: (tzhuMap[tzuihUni] ?: run {
+				error("Tzuih $tzuihUni not found.")
+			}).fastFlatMap { resolveNodePath(it) })
+				.also { createOnPath(it, tzuihUni) }
+		}
+		tzhuMap.keys.forEach { tzuihUni -> resolveNodePath(tzuihUni) }
+	}
 }
+
+private lateinit var tzhuComposer: TzhuComposer
+
+private fun VwinngjuanIms.createTzhuComposer() = TzhuComposer(this)
+
+
+
+
+
+
+
+
+
 
 private class ComposingVwinStack(private val ims: VwinngjuanIms) {
 	private fun update() {
@@ -197,16 +226,32 @@ private class ComposingVwinStack(private val ims: VwinngjuanIms) {
 		val notEmpty
 			get() = list.isNotEmpty()
 
-		fun buildTzuih() = mutableListOf("").apply {
-			var node = TzhuNode.root
-			list.forEach { vwin ->
-				node = node.getChildOf(vwin)
-					?: TzhuNode.root.getChildOf(vwin).also { add("") }
-					?: error("Cannot get child on $node or ${TzhuNode.root}")
-				node.tzuihUni?.also { this[lastIndex] = it }
-			}
+		fun buildTzuih() = mutableListOf<String>().apply {
+//			TODO 偵錯用。
+//			list.run {
+//				clear()
+//				"丄 干 口 𡿨".split(' ')
+//					.map { tzhuComposer.fullVwinList[tzhuComposer.vwinCodeMap[it]!!] }
+//					.let { addAll(it) }
+//			}
+			var nextAvailable = 0
+			do {
+				var node = tzhuComposer.root
+				add("")
+				for (i in nextAvailable ..< list.size) {
+					val code = tzhuComposer.vwinCodeMap[list[i].label]!!
+					val child = node.children[code] ?: break
+					node = child
+					node.tzuihUni?.also {
+						nextAvailable = i + 1
+						this[lastIndex] = it
+					}
+//					TODO 偵錯用。
+					println("${nextAvailable - 1}\t$i\t${list[i]}\t$node\t$this")
+				}
+			} while (nextAvailable < list.size)
 			// TODO 特殊處理擴展區字元。
-		}.fastJoinToString("　") { it }
+		}.fastJoinToString("")
 	}
 }
 
@@ -221,22 +266,40 @@ private val VwinngjuanIms.composingVwinStack
 
 
 
+
+
+
+private class LejKeyAction(
+	val content: KeyContent,
+	val action: VwinngjuanIms.() -> Unit,
+) {
+	override fun toString() = "LejKeyAction($content)"
+}
+
+private var keyMap by mutableStateOf<Map<Char, LejKeyAction>?>(null)
+
+
 @Composable
 private fun LejKey(
 	ims: VwinngjuanIms,
 	keyChar: Char,
 	modifier: Modifier = Modifier,
 ) {
-	(keyMap[keyChar] ?: "$keyChar".let {
-		LejKeyAction(KeyContent(it)) { commitText(it) }
+	(keyMap?.get(keyChar) ?: "$keyChar".let {
+		LejKeyAction(KeyContent(it)) {
+			if (ComposingVwinStack.notEmpty) {
+				commitText(ComposingVwinStack.buildTzuih())
+				composingVwinStack.clear()
+			}
+			commitText(it)
+		}
 	}).apply {
 		OutlinedKey(
 			ims,
 			content,
 			modifier,
 			arrayOf(keyMap),
-			action,
-		)
+		) { action() }
 	}
 }
 
@@ -248,7 +311,7 @@ internal fun BackspaceKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
 		modifier,
 	) {
 		when {
-			keyMap !== lejKeyMap -> keyMap = lejKeyMap
+			keyMap !== tzhuComposer.lejKeyMap -> keyMap = tzhuComposer.lejKeyMap
 			ComposingVwinStack.notEmpty -> composingVwinStack.pop()
 			else -> backspaceText()
 		}
@@ -262,20 +325,23 @@ internal fun EnterKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
 		KeyContent(Icons.AutoMirrored.Filled.KeyboardReturn),
 		modifier,
 	) {
-		if (ComposingVwinStack.notEmpty) {
-			commitText(ComposingVwinStack.buildTzuih())
-			composingVwinStack.clear()
-		} else {
-			commitText("\n")
+		when {
+			ComposingVwinStack.notEmpty -> {
+				commitText(ComposingVwinStack.buildTzuih())
+				composingVwinStack.clear()
+			}
+			else -> commitText("\n")
 		}
 	}
 }
 
-internal val vwinngjuanPlane = Plane({ stringResource(R.string.vwinngjuan_plane) }) { ims ->
+internal val vwinngjuanPlane = Plane({ stringResource(R.string.vwinngjuan_plane) }, {
+	composingVwinStack.clear()
+}) { ims ->
 	var exceptionNullable by remember { mutableStateOf<Exception?>(null) }
 	LaunchedEffect(Unit) {
 		try {
-			TzhuNode.sync(ims)
+			ims.createTzhuComposer()
 		} catch (e: Exception) {
 			exceptionNullable = e
 		}
@@ -286,9 +352,9 @@ internal val vwinngjuanPlane = Plane({ stringResource(R.string.vwinngjuan_plane)
 			TabKey(ims, Modifier.weight(1F))
 			LejKey(ims, '`', Modifier.weight(1F))
 			LejKey(ims, '\'',  Modifier.weight(1F))
-			LejKey(ims, '[', Modifier.weight(1F))
-			LejKey(ims, ']', Modifier.weight(1F))
-			LejKey(ims, '\\', Modifier.weight(1F))
+			LejKey(ims, '「', Modifier.weight(1F))
+			LejKey(ims, '」', Modifier.weight(1F))
+			LejKey(ims, '・', Modifier.weight(1F))
 			LejKey(ims, '-', Modifier.weight(1F))
 			LejKey(ims, '=', Modifier.weight(1F))
 			BackspaceKey(ims, Modifier.weight(2F))
@@ -345,8 +411,8 @@ internal val vwinngjuanPlane = Plane({ stringResource(R.string.vwinngjuan_plane)
 				LejKey(ims, 'b', Modifier.weight(1F))
 				LejKey(ims, 'n', Modifier.weight(1F))
 				LejKey(ims, 'm', Modifier.weight(1F))
-				LejKey(ims, ',', Modifier.weight(1F))
-				LejKey(ims, '.', Modifier.weight(1F))
+				LejKey(ims, '、', Modifier.weight(1F))
+				LejKey(ims, '。', Modifier.weight(1F))
 			}
 		}
 		Row(Modifier.weight(1F)) {

@@ -16,21 +16,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.AwaitPointerEventScope
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.positionChanged
+import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.util.fastAny
 import com.buhzzi.vwinngjuanime.VwinngjuanIms
+import kotlin.math.abs
 
 const val LONG_PRESS_TIMEOUT = 0x200L
 const val REPEAT_INTERVAL = 0x20L
 
 internal class Plane(
-	val nameGetter: @Composable () -> String,
+	val getName: @Composable () -> String,
+	val finish: VwinngjuanIms.() -> Unit = { },
 	val composableFunction: @Composable (ims: VwinngjuanIms) -> Unit,
 ) {
 	val name
 		@Composable
-		get() = nameGetter()
+		get() = getName()
 }
 
 @Composable
@@ -53,11 +55,13 @@ internal enum class PointerStatus {
 	MOVED,
 }
 
-internal suspend fun AwaitPointerEventScope.awaitPointerStatus() =
+internal suspend fun AwaitPointerEventScope.awaitPointerStatus(movedThreshold: Float) =
 	awaitPointerEvent().changes.run {
 		when {
 			!fastAny { it.pressed } -> PointerStatus.RELEASED
-			fastAny { it.positionChanged() } -> PointerStatus.MOVED
+			fastAny { it.positionChange().run {
+				abs(x) > movedThreshold || abs(y) > movedThreshold
+			} } -> PointerStatus.MOVED
 			else -> PointerStatus.HELD
 		}
 	}
@@ -65,7 +69,7 @@ internal suspend fun AwaitPointerEventScope.awaitPointerStatus() =
 //			println("await   $it")
 		}
 
-internal suspend fun AwaitPointerEventScope.timeoutPointerStatus(time: Long) =
+internal suspend fun AwaitPointerEventScope.timeoutPointerStatus(time: Long, movedThreshold: Float) =
 	/*
 		null -> false (timed out)
 		break -> true (released or moved)
@@ -73,7 +77,7 @@ internal suspend fun AwaitPointerEventScope.timeoutPointerStatus(time: Long) =
 	withTimeoutOrNull(time) {
 		var lastStatus: PointerStatus
 		do {
-			lastStatus = awaitPointerStatus()
+			lastStatus = awaitPointerStatus(movedThreshold)
 		} while (lastStatus == PointerStatus.HELD)
 		lastStatus
 			.also {
@@ -85,7 +89,7 @@ internal suspend fun AwaitPointerEventScope.timeoutPointerStatus(time: Long) =
 
 private fun VwinngjuanIms.vibrate() {
 	getSystemService(Vibrator::class.java).vibrate(
-		VibrationEffect.createOneShot(0x20, 255)
+		VibrationEffect.createOneShot(0x40, 255)
 	)
 }
 
@@ -95,6 +99,7 @@ internal inline fun OutlinedClickable(
 	crossinline action: VwinngjuanIms.() -> Unit,
 	modifier: Modifier = Modifier,
 	keysPointerInput: Array<Any?> = arrayOf(Unit),
+	movedThreshold: Float = 16F,
 	crossinline content: @Composable () -> Unit,
 ) {
 	OutlinedSpace(modifier
@@ -102,24 +107,23 @@ internal inline fun OutlinedClickable(
 		.pointerInput(keys = keysPointerInput) {
 			awaitPointerEventScope {
 				while (true) {
-					awaitPointerStatus() == PointerStatus.HELD || continue
-					when (timeoutPointerStatus(LONG_PRESS_TIMEOUT)) {
+					awaitPointerStatus(movedThreshold) == PointerStatus.HELD || continue
+					ims.vibrate()
+					when (timeoutPointerStatus(LONG_PRESS_TIMEOUT, movedThreshold)) {
 						PointerStatus.RELEASED -> {
 //							println("action once")
 							ims.action()
-							ims.vibrate()
 							continue
 						}
 
 						PointerStatus.MOVED -> continue
 
-						else -> {
-							do {
-//								println("action repeat")
-								ims.action()
-								ims.vibrate()
-							} while (timeoutPointerStatus(REPEAT_INTERVAL)?.equals(PointerStatus.HELD) != false)
-						}
+						else -> do {
+//							println("action repeat")
+							ims.action()
+						} while (
+							timeoutPointerStatus(REPEAT_INTERVAL, movedThreshold)?.equals(PointerStatus.HELD) != false
+						)
 					}
 				}
 			}
@@ -144,9 +148,10 @@ internal inline fun OutlinedKey(
 	content: KeyContent,
 	modifier: Modifier = Modifier,
 	keysPointerInput: Array<Any?> = arrayOf(Unit),
+	movedThreshold: Float = 16F,
 	crossinline action: VwinngjuanIms.() -> Unit,
 ) {
-	OutlinedClickable(ims, action, modifier, keysPointerInput) {
+	OutlinedClickable(ims, action, modifier, keysPointerInput, movedThreshold) {
 		Column(
 			verticalArrangement = Arrangement.Center,
 			horizontalAlignment = Alignment.CenterHorizontally
