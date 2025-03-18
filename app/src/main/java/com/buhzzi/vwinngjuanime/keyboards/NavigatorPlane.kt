@@ -62,9 +62,8 @@ internal fun VwinngjuanIms.backspaceText() {
 }
 
 @Composable
-internal fun PlaneGoBackKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
+internal fun PlaneGoBackKey(modifier: Modifier = Modifier) {
 	OutlinedKey(
-		ims,
 		KeyContent(stringResource(R.string.navigator_go_back), Icons.AutoMirrored.Filled.ArrowBackIos),
 		modifier,
 	) {
@@ -73,9 +72,8 @@ internal fun PlaneGoBackKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
 }
 
 @Composable
-internal fun ActionGoKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
+internal fun ActionGoKey(modifier: Modifier = Modifier) {
 	OutlinedKey(
-		ims,
 		KeyContent(Icons.AutoMirrored.Filled.Send),
 		modifier,
 	) {
@@ -84,9 +82,8 @@ internal fun ActionGoKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
 }
 
 @Composable
-internal fun ActionSearchKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
+internal fun ActionSearchKey(modifier: Modifier = Modifier) {
 	OutlinedKey(
-		ims,
 		KeyContent(Icons.Filled.Search),
 		modifier,
 	) {
@@ -95,9 +92,8 @@ internal fun ActionSearchKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) 
 }
 
 @Composable
-internal fun ActionSendKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
+internal fun ActionSendKey(modifier: Modifier = Modifier) {
 	OutlinedKey(
-		ims,
 		KeyContent(Icons.AutoMirrored.Filled.Send),
 		modifier,
 	) {
@@ -106,9 +102,8 @@ internal fun ActionSendKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
 }
 
 @Composable
-internal fun ActionNextKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
+internal fun ActionNextKey(modifier: Modifier = Modifier) {
 	OutlinedKey(
-		ims,
 		KeyContent(Icons.AutoMirrored.Filled.ArrowForward),
 		modifier,
 	) {
@@ -117,9 +112,8 @@ internal fun ActionNextKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
 }
 
 @Composable
-internal fun ActionDoneKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
+internal fun ActionDoneKey(modifier: Modifier = Modifier) {
 	OutlinedKey(
-		ims,
 		KeyContent(Icons.Filled.Done),
 		modifier,
 	) {
@@ -128,9 +122,8 @@ internal fun ActionDoneKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
 }
 
 @Composable
-internal fun ActionPreviousKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
+internal fun ActionPreviousKey(modifier: Modifier = Modifier) {
 	OutlinedKey(
-		ims,
 		KeyContent(Icons.AutoMirrored.Filled.ArrowBack),
 		modifier,
 	) {
@@ -139,9 +132,8 @@ internal fun ActionPreviousKey(ims: VwinngjuanIms, modifier: Modifier = Modifier
 }
 
 @Composable
-internal fun ImPickerKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
+internal fun ImPickerKey(modifier: Modifier = Modifier) {
 	OutlinedKey(
-		ims,
 		KeyContent(stringResource(R.string.navigator_im_picker), Icons.Filled.AppShortcut),
 		modifier,
 	) {
@@ -151,13 +143,11 @@ internal fun ImPickerKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
 
 @Composable
 internal fun NavigatorKey(
-	ims: VwinngjuanIms,
 	plane: Plane,
 	icon: ImageVector?,
 	modifier: Modifier = Modifier,
 ) {
 	OutlinedKey(
-		ims,
 		KeyContent(plane.name, icon),
 		modifier,
 	) {
@@ -166,46 +156,46 @@ internal fun NavigatorKey(
 }
 
 @Composable
-internal fun NavigatorPlaneNavigatorKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
-	NavigatorKey(ims, navigatorPlane, Icons.Filled.Navigation, modifier)
+internal fun NavigatorPlaneNavigatorKey(modifier: Modifier = Modifier) {
+	NavigatorKey(navigatorPlane, Icons.Filled.Navigation, modifier)
 }
 
 @Composable
-internal fun EditorPlaneNavigatorKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
-	NavigatorKey(ims, editorPlane, Icons.Filled.ControlCamera, modifier)
+internal fun EditorPlaneNavigatorKey(modifier: Modifier = Modifier) {
+	NavigatorKey(editorPlane, Icons.Filled.ControlCamera, modifier)
 }
 
 @Composable
-internal fun ClipboardPlaneNavigatorKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
-	NavigatorKey(ims, clipboardPlane, Icons.Filled.ContentPaste, modifier)
+internal fun ClipboardPlaneNavigatorKey(modifier: Modifier = Modifier) {
+	NavigatorKey(clipboardPlane, Icons.Filled.ContentPaste, modifier)
 }
 
 @Composable
-internal fun QwertyPlaneNavigatorKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
-	NavigatorKey(ims, qwertyPlane, Icons.Filled.Keyboard, modifier)
+internal fun QwertyPlaneNavigatorKey(modifier: Modifier = Modifier) {
+	NavigatorKey(qwertyPlane, Icons.Filled.Keyboard, modifier)
 }
 
 @Composable
-internal fun VwinngjuanPlaneNavigatorKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
-	NavigatorKey(ims, vwinngjuanPlane, Icons.Filled.Keyboard, modifier)
+internal fun VwinngjuanPlaneNavigatorKey(modifier: Modifier = Modifier) {
+	NavigatorKey(vwinngjuanPlane, Icons.Filled.Keyboard, modifier)
 }
 
 @Composable
-internal fun KanaPlaneNavigatorKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
-	NavigatorKey(ims, kanaPlane, Icons.Filled.Keyboard, modifier)
+internal fun KanaPlaneNavigatorKey(modifier: Modifier = Modifier) {
+	NavigatorKey(kanaPlane, Icons.Filled.Keyboard, modifier)
 }
 
-internal val navigatorPlane = Plane({ stringResource(R.string.navigator_plane) }) { ims ->
+internal val navigatorPlane = Plane({ stringResource(R.string.navigator_plane) }) {
 	Column(Modifier) {
 		Row(Modifier.weight(1F)) {
-			QwertyPlaneNavigatorKey(ims, Modifier.weight(1F))
-			VwinngjuanPlaneNavigatorKey(ims, Modifier.weight(1F))
-			KanaPlaneNavigatorKey(ims, Modifier.weight(1F))
+			QwertyPlaneNavigatorKey(Modifier.weight(1F))
+			VwinngjuanPlaneNavigatorKey(Modifier.weight(1F))
+			KanaPlaneNavigatorKey(Modifier.weight(1F))
 		}
 		Row(Modifier.weight(1F)) {
-			EditorPlaneNavigatorKey(ims, Modifier.weight(1F))
-			ClipboardPlaneNavigatorKey(ims, Modifier.weight(1F))
-			ImPickerKey(ims, Modifier.weight(1F))
+			EditorPlaneNavigatorKey(Modifier.weight(1F))
+			ClipboardPlaneNavigatorKey(Modifier.weight(1F))
+			ImPickerKey(Modifier.weight(1F))
 		}
 	}
 }

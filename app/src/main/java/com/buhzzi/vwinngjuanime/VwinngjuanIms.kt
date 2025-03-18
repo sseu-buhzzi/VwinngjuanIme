@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -85,14 +87,12 @@ internal class VwinngjuanIms : ComposeInputMethodService() {
 	override fun onCreateInputComposeView() = ComposeView(this).apply {
 		setContent {
 			ThemeWrapComposable {
-				Column(Modifier.height(0x140.dp)) {
-//					item {
-					Box(Modifier.safeDrawingPadding()) {
-						currentPlane.composableFunction(this@VwinngjuanIms)
+				CompositionLocalProvider(LocalVwinngjuanIms provides this@VwinngjuanIms) {
+					Column(Modifier.height(0x140.dp)) {
+						Box(Modifier.safeDrawingPadding()) {
+							currentPlane.composableFunction()
+						}
 					}
-//						Text("0\n1\n2\n3\n4\n5\n6\n7\n8\n9\na\nb\nc\nd\ne\nf\n", Modifier.background(Color.Gray).fillMaxWidth())
-//					}
-//					OutlinedSpace(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars)) { }
 				}
 			}
 		}
@@ -104,10 +104,6 @@ internal class VwinngjuanIms : ComposeInputMethodService() {
 		inputType = attribute?.inputType ?: EditorInfo.TYPE_NULL
 		imeOptions = attribute?.imeOptions ?: EditorInfo.IME_NULL
 		println("inputType: ${inputType.toString(0x10)}\timeOptions: ${imeOptions.toString(0x10)}")
-//		TODO 微信Bug
-//		val BRAND = "微信"
-//		val text = "請始終保持${BRAND}在瑩幕顯示"
-//		window.window?.isNavigationBarContrastEnforced = false
 	}
 
 	override fun onUnbindInput() {
@@ -124,4 +120,8 @@ internal class VwinngjuanIms : ComposeInputMethodService() {
 	var inputType by mutableIntStateOf(EditorInfo.TYPE_NULL)
 
 	var imeOptions by mutableIntStateOf(EditorInfo.IME_NULL)
+}
+
+internal val LocalVwinngjuanIms = compositionLocalOf<VwinngjuanIms> {
+	error("No VwinngjuanIms.")
 }

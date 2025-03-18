@@ -59,6 +59,7 @@ internal fun MainComposable() {
 }
 
 internal val LocalScaffoldState = staticCompositionLocalOf<ScaffoldState> { error("No ScaffoldState provided") }
+
 @Composable
 internal fun ScaffoldWrapComposable(content: @Composable (PaddingValues) -> Unit) {
 	ThemeWrapComposable {
@@ -73,6 +74,7 @@ internal fun ScaffoldWrapComposable(content: @Composable (PaddingValues) -> Unit
 }
 
 internal val LocalCustomColors = compositionLocalOf { mutableMapOf<String, Color>() }
+
 @Composable
 internal fun ThemeWrapComposable(content: @Composable () -> Unit) {
 	MaterialTheme(

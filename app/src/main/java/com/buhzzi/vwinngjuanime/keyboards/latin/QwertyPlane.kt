@@ -17,8 +17,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import com.buhzzi.vwinngjuanime.LocalVwinngjuanIms
 import com.buhzzi.vwinngjuanime.R
-import com.buhzzi.vwinngjuanime.VwinngjuanIms
 import com.buhzzi.vwinngjuanime.keyboards.ActionDoneKey
 import com.buhzzi.vwinngjuanime.keyboards.ActionGoKey
 import com.buhzzi.vwinngjuanime.keyboards.ActionNextKey
@@ -43,7 +43,6 @@ private var latinKeySet by mutableStateOf(LatinKeySet.LOWERCASE)
 
 @Composable
 private fun CaseLatterKey(
-	ims: VwinngjuanIms,
 	lowerDesc: String,
 	upperDesc: String,
 	modifier: Modifier = Modifier,
@@ -53,19 +52,18 @@ private fun CaseLatterKey(
 		LatinKeySet.UPPERCASE -> upperDesc
 	}
 	OutlinedKey(
-		ims,
 		KeyContent(desc),
 		modifier,
 		arrayOf(latinKeySet),
 	) {
 		commitText(desc)
+		latinKeySet = LatinKeySet.LOWERCASE
 	}
 }
 
 @Composable
-internal fun TabKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
+internal fun TabKey(modifier: Modifier = Modifier) {
 	OutlinedKey(
-		ims,
 		KeyContent(Icons.AutoMirrored.Filled.KeyboardTab),
 		modifier,
 	) {
@@ -74,9 +72,8 @@ internal fun TabKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
 }
 
 @Composable
-internal fun BackspaceKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
+internal fun BackspaceKey(modifier: Modifier = Modifier) {
 	OutlinedKey(
-		ims,
 		KeyContent(Icons.AutoMirrored.Filled.Backspace),
 		modifier,
 	) {
@@ -85,9 +82,8 @@ internal fun BackspaceKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun ShiftKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
+private fun ShiftKey(modifier: Modifier = Modifier) {
 	OutlinedKey(
-		ims,
 		KeyContent(Icons.Filled.KeyboardCapslock),
 		modifier,
 	) {
@@ -99,9 +95,8 @@ private fun ShiftKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
 }
 
 @Composable
-internal fun MetaKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
+internal fun MetaKey(modifier: Modifier = Modifier) {
 	OutlinedKey(
-		ims,
 		KeyContent(Icons.Filled.KeyboardCommandKey),
 		modifier,
 	) {
@@ -110,9 +105,8 @@ internal fun MetaKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
 }
 
 @Composable
-internal fun SpaceKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
+internal fun SpaceKey(modifier: Modifier = Modifier) {
 	OutlinedKey(
-		ims,
 		KeyContent(Icons.Filled.SpaceBar),
 		modifier,
 	) {
@@ -121,9 +115,8 @@ internal fun SpaceKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
 }
 
 @Composable
-internal fun CtrlKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
+internal fun CtrlKey(modifier: Modifier = Modifier) {
 	OutlinedKey(
-		ims,
 		KeyContent(Icons.Filled.KeyboardControlKey),
 		modifier,
 	) {
@@ -132,9 +125,8 @@ internal fun CtrlKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
 }
 
 @Composable
-internal fun EnterKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
+internal fun EnterKey(modifier: Modifier = Modifier) {
 	OutlinedKey(
-		ims,
 		KeyContent(Icons.AutoMirrored.Filled.KeyboardReturn),
 		modifier,
 	) {
@@ -142,107 +134,108 @@ internal fun EnterKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
 	}
 }
 
-internal val qwertyPlane: Plane = Plane({ stringResource(R.string.qwerty_plane) }) { ims ->
+internal val qwertyPlane: Plane = Plane({ stringResource(R.string.qwerty_plane) }) {
 	Column {
 		Row(Modifier.weight(1F)) {
-			TabKey(ims, Modifier.weight(1F))
-			CaseLatterKey(ims, "`", "~", Modifier.weight(1F))
-			CaseLatterKey(ims, "'", "\"", Modifier.weight(1F))
-			CaseLatterKey(ims, "[", "{", Modifier.weight(1F))
-			CaseLatterKey(ims, "]", "}", Modifier.weight(1F))
-			CaseLatterKey(ims, "\\", "|", Modifier.weight(1F))
-			CaseLatterKey(ims, "-", "_", Modifier.weight(1F))
-			CaseLatterKey(ims, "=", "+", Modifier.weight(1F))
-			BackspaceKey(ims, Modifier.weight(2F))
+			TabKey(Modifier.weight(1F))
+			CaseLatterKey("`", "~", Modifier.weight(1F))
+			CaseLatterKey("'", "\"", Modifier.weight(1F))
+			CaseLatterKey("[", "{", Modifier.weight(1F))
+			CaseLatterKey("]", "}", Modifier.weight(1F))
+			CaseLatterKey("\\", "|", Modifier.weight(1F))
+			CaseLatterKey("-", "_", Modifier.weight(1F))
+			CaseLatterKey("=", "+", Modifier.weight(1F))
+			BackspaceKey(Modifier.weight(2F))
 		}
 		Row(Modifier.weight(1F)) {
-			CaseLatterKey(ims, "1", "!", Modifier.weight(1F))
-			CaseLatterKey(ims, "2", "@", Modifier.weight(1F))
-			CaseLatterKey(ims, "3", "#", Modifier.weight(1F))
-			CaseLatterKey(ims, "4", "$", Modifier.weight(1F))
-			CaseLatterKey(ims, "5", "%", Modifier.weight(1F))
-			CaseLatterKey(ims, "6", "^", Modifier.weight(1F))
-			CaseLatterKey(ims, "7", "&", Modifier.weight(1F))
-			CaseLatterKey(ims, "8", "*", Modifier.weight(1F))
-			CaseLatterKey(ims, "9", "(", Modifier.weight(1F))
-			CaseLatterKey(ims, "0", ")", Modifier.weight(1F))
+			CaseLatterKey("1", "!", Modifier.weight(1F))
+			CaseLatterKey("2", "@", Modifier.weight(1F))
+			CaseLatterKey("3", "#", Modifier.weight(1F))
+			CaseLatterKey("4", "$", Modifier.weight(1F))
+			CaseLatterKey("5", "%", Modifier.weight(1F))
+			CaseLatterKey("6", "^", Modifier.weight(1F))
+			CaseLatterKey("7", "&", Modifier.weight(1F))
+			CaseLatterKey("8", "*", Modifier.weight(1F))
+			CaseLatterKey("9", "(", Modifier.weight(1F))
+			CaseLatterKey("0", ")", Modifier.weight(1F))
 		}
 		Row(Modifier.weight(1F)) {
-			CaseLatterKey(ims, "q", "Q", Modifier.weight(1F))
-			CaseLatterKey(ims, "w", "W", Modifier.weight(1F))
-			CaseLatterKey(ims, "e", "E", Modifier.weight(1F))
-			CaseLatterKey(ims, "r", "R", Modifier.weight(1F))
-			CaseLatterKey(ims, "t", "T", Modifier.weight(1F))
-			CaseLatterKey(ims, "y", "Y", Modifier.weight(1F))
-			CaseLatterKey(ims, "u", "U", Modifier.weight(1F))
-			CaseLatterKey(ims, "i", "I", Modifier.weight(1F))
-			CaseLatterKey(ims, "o", "O", Modifier.weight(1F))
-			CaseLatterKey(ims, "p", "P", Modifier.weight(1F))
+			CaseLatterKey("q", "Q", Modifier.weight(1F))
+			CaseLatterKey("w", "W", Modifier.weight(1F))
+			CaseLatterKey("e", "E", Modifier.weight(1F))
+			CaseLatterKey("r", "R", Modifier.weight(1F))
+			CaseLatterKey("t", "T", Modifier.weight(1F))
+			CaseLatterKey("y", "Y", Modifier.weight(1F))
+			CaseLatterKey("u", "U", Modifier.weight(1F))
+			CaseLatterKey("i", "I", Modifier.weight(1F))
+			CaseLatterKey("o", "O", Modifier.weight(1F))
+			CaseLatterKey("p", "P", Modifier.weight(1F))
 		}
 		Row(Modifier.weight(1F)) {
-			CaseLatterKey(ims, "a", "A", Modifier.weight(1F))
-			CaseLatterKey(ims, "s", "S", Modifier.weight(1F))
-			CaseLatterKey(ims, "d", "D", Modifier.weight(1F))
-			CaseLatterKey(ims, "f", "F", Modifier.weight(1F))
-			CaseLatterKey(ims, "g", "G", Modifier.weight(1F))
-			CaseLatterKey(ims, "h", "H", Modifier.weight(1F))
-			CaseLatterKey(ims, "j", "J", Modifier.weight(1F))
-			CaseLatterKey(ims, "k", "K", Modifier.weight(1F))
-			CaseLatterKey(ims, "l", "L", Modifier.weight(1F))
-			CaseLatterKey(ims, ";", ":", Modifier.weight(1F))
+			CaseLatterKey("a", "A", Modifier.weight(1F))
+			CaseLatterKey("s", "S", Modifier.weight(1F))
+			CaseLatterKey("d", "D", Modifier.weight(1F))
+			CaseLatterKey("f", "F", Modifier.weight(1F))
+			CaseLatterKey("g", "G", Modifier.weight(1F))
+			CaseLatterKey("h", "H", Modifier.weight(1F))
+			CaseLatterKey("j", "J", Modifier.weight(1F))
+			CaseLatterKey("k", "K", Modifier.weight(1F))
+			CaseLatterKey("l", "L", Modifier.weight(1F))
+			CaseLatterKey(";", ":", Modifier.weight(1F))
 		}
 		Row(Modifier.weight(1F)) {
-			CaseLatterKey(ims, "/", "?", Modifier.weight(1F))
-			CaseLatterKey(ims, "z", "Z", Modifier.weight(1F))
-			CaseLatterKey(ims, "x", "X", Modifier.weight(1F))
-			CaseLatterKey(ims, "c", "C", Modifier.weight(1F))
-			CaseLatterKey(ims, "v", "V", Modifier.weight(1F))
-			CaseLatterKey(ims, "b", "B", Modifier.weight(1F))
-			CaseLatterKey(ims, "n", "N", Modifier.weight(1F))
-			CaseLatterKey(ims, "m", "M", Modifier.weight(1F))
-			CaseLatterKey(ims, ",", "<", Modifier.weight(1F))
-			CaseLatterKey(ims, ".", ">", Modifier.weight(1F))
+			CaseLatterKey("/", "?", Modifier.weight(1F))
+			CaseLatterKey("z", "Z", Modifier.weight(1F))
+			CaseLatterKey("x", "X", Modifier.weight(1F))
+			CaseLatterKey("c", "C", Modifier.weight(1F))
+			CaseLatterKey("v", "V", Modifier.weight(1F))
+			CaseLatterKey("b", "B", Modifier.weight(1F))
+			CaseLatterKey("n", "N", Modifier.weight(1F))
+			CaseLatterKey("m", "M", Modifier.weight(1F))
+			CaseLatterKey(",", "<", Modifier.weight(1F))
+			CaseLatterKey(".", ">", Modifier.weight(1F))
 		}
 		Row(Modifier.weight(1F)) {
-			ShiftKey(ims, Modifier.weight(2F))
-			MetaKey(ims, Modifier.weight(1F))
-			SpaceKey(ims, Modifier.weight(4F))
-			CtrlKey(ims, Modifier.weight(1F))
+			ShiftKey(Modifier.weight(2F))
+			MetaKey(Modifier.weight(1F))
+			SpaceKey(Modifier.weight(4F))
+			CtrlKey(Modifier.weight(1F))
+			val ims = LocalVwinngjuanIms.current
 			(ims.imeOptions and EditorInfo.IME_MASK_ACTION).also { println("${ims.imeOptions.toString(0x10)} after masked: ${it.toString(0x10)}") }
 			when (ims.imeOptions and EditorInfo.IME_MASK_ACTION) {
 				EditorInfo.IME_ACTION_GO -> {
 					println("ime action go")
-					EnterKey(ims, Modifier.weight(1F))
-					ActionGoKey(ims, Modifier.weight(1F))
+					EnterKey(Modifier.weight(1F))
+					ActionGoKey(Modifier.weight(1F))
 				}
 				EditorInfo.IME_ACTION_SEARCH -> {
 					println("ime action search")
-					EnterKey(ims, Modifier.weight(1F))
-					ActionSearchKey(ims, Modifier.weight(1F))
+					EnterKey(Modifier.weight(1F))
+					ActionSearchKey(Modifier.weight(1F))
 				}
 				EditorInfo.IME_ACTION_SEND -> {
 					println("ime action send")
-					EnterKey(ims, Modifier.weight(1F))
-					ActionSendKey(ims, Modifier.weight(1F))
+					EnterKey(Modifier.weight(1F))
+					ActionSendKey(Modifier.weight(1F))
 				}
 				EditorInfo.IME_ACTION_NEXT -> {
 					println("ime action next")
-					EnterKey(ims, Modifier.weight(1F))
-					ActionNextKey(ims, Modifier.weight(1F))
+					EnterKey(Modifier.weight(1F))
+					ActionNextKey(Modifier.weight(1F))
 				}
 				EditorInfo.IME_ACTION_DONE -> {
 					println("ime action done")
-					EnterKey(ims, Modifier.weight(1F))
-					ActionDoneKey(ims, Modifier.weight(1F))
+					EnterKey(Modifier.weight(1F))
+					ActionDoneKey(Modifier.weight(1F))
 				}
 				EditorInfo.IME_ACTION_PREVIOUS -> {
 					println("ime action previous")
-					EnterKey(ims, Modifier.weight(1F))
-					ActionPreviousKey(ims, Modifier.weight(1F))
+					EnterKey(Modifier.weight(1F))
+					ActionPreviousKey(Modifier.weight(1F))
 				}
 				else -> {
 					println("no ime action")
-					EnterKey(ims, Modifier.weight(2F))
+					EnterKey(Modifier.weight(2F))
 				}
 			}
 		}
