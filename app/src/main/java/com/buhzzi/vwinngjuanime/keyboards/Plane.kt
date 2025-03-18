@@ -19,6 +19,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.util.fastAny
+import com.buhzzi.vwinngjuanime.LocalVwinngjuanIms
 import com.buhzzi.vwinngjuanime.VwinngjuanIms
 import kotlin.math.abs
 
@@ -28,7 +29,7 @@ const val REPEAT_INTERVAL = 0x20L
 internal class Plane(
 	val getName: @Composable () -> String,
 	val finish: VwinngjuanIms.() -> Unit = { },
-	val composableFunction: @Composable (ims: VwinngjuanIms) -> Unit,
+	val composableFunction: @Composable () -> Unit,
 ) {
 	val name
 		@Composable
@@ -80,28 +81,23 @@ internal suspend fun AwaitPointerEventScope.timeoutPointerStatus(time: Long, mov
 			lastStatus = awaitPointerStatus(movedThreshold)
 		} while (lastStatus == PointerStatus.HELD)
 		lastStatus
-			.also {
-//				println("timeout $it")
-			}
-	}.also {
-//		it ?: println("timeout ${null}")
 	}
 
 private fun VwinngjuanIms.vibrate() {
 	getSystemService(Vibrator::class.java).vibrate(
-		VibrationEffect.createOneShot(0x40, 255)
+		VibrationEffect.createOneShot(0x40, 0xff)
 	)
 }
 
 @Composable
 internal inline fun OutlinedClickable(
-	ims: VwinngjuanIms,
 	crossinline action: VwinngjuanIms.() -> Unit,
 	modifier: Modifier = Modifier,
 	keysPointerInput: Array<Any?> = arrayOf(Unit),
 	movedThreshold: Float = 16F,
 	crossinline content: @Composable () -> Unit,
 ) {
+	val ims = LocalVwinngjuanIms.current
 	OutlinedSpace(modifier
 		.clickable { }
 		.pointerInput(keys = keysPointerInput) {
@@ -144,14 +140,13 @@ internal class KeyContent(
 
 @Composable
 internal inline fun OutlinedKey(
-	ims: VwinngjuanIms,
 	content: KeyContent,
 	modifier: Modifier = Modifier,
 	keysPointerInput: Array<Any?> = arrayOf(Unit),
 	movedThreshold: Float = 16F,
 	crossinline action: VwinngjuanIms.() -> Unit,
 ) {
-	OutlinedClickable(ims, action, modifier, keysPointerInput, movedThreshold) {
+	OutlinedClickable(action, modifier, keysPointerInput, movedThreshold) {
 		Column(
 			verticalArrangement = Arrangement.Center,
 			horizontalAlignment = Alignment.CenterHorizontally
