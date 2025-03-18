@@ -42,6 +42,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
+import com.buhzzi.vwinngjuanime.LocalVwinngjuanIms
 import com.buhzzi.vwinngjuanime.R
 import com.buhzzi.vwinngjuanime.VwinngjuanIms
 import com.buhzzi.vwinngjuanime.fromBytes
@@ -81,12 +82,10 @@ private fun InputConnection.applyCarets(@IntRange(-1, 1) carets: Int, block: (Pa
 
 @Composable
 private fun LeftKey(
-	ims: VwinngjuanIms,
 	modifier: Modifier = Modifier,
 	@IntRange(-1, 1) carets: Int = 0,
 ) {
 	OutlinedKey(
-		ims,
 		KeyContent(Icons.AutoMirrored.Filled.KeyboardArrowLeft),
 		modifier,
 	) {
@@ -96,12 +95,10 @@ private fun LeftKey(
 
 @Composable
 private fun RightKey(
-	ims: VwinngjuanIms,
 	modifier: Modifier = Modifier,
 	@IntRange(-1, 1) carets: Int = 0,
 ) {
 	OutlinedKey(
-		ims,
 		KeyContent(Icons.AutoMirrored.Filled.KeyboardArrowRight),
 		modifier,
 	) {
@@ -113,12 +110,10 @@ private fun RightKey(
 
 @Composable
 private fun LeftMostKey(
-	ims: VwinngjuanIms,
 	modifier: Modifier = Modifier,
 	@IntRange(-1, 1) carets: Int = 0,
 ) {
 	OutlinedKey(
-		ims,
 		KeyContent(Icons.Filled.KeyboardDoubleArrowLeft),
 		modifier,
 	) {
@@ -128,12 +123,10 @@ private fun LeftMostKey(
 
 @Composable
 private fun RightMostKey(
-	ims: VwinngjuanIms,
 	modifier: Modifier = Modifier,
 	@IntRange(-1, 1) carets: Int = 0,
 ) {
 	OutlinedKey(
-		ims,
 		KeyContent(Icons.Filled.KeyboardDoubleArrowRight),
 		modifier,
 	) {
@@ -142,9 +135,8 @@ private fun RightMostKey(
 }
 
 @Composable
-private fun SelectAllKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
+private fun SelectAllKey(modifier: Modifier = Modifier) {
 	OutlinedKey(
-		ims,
 		KeyContent("Select All", Icons.Filled.SelectAll),
 		modifier,
 	) {
@@ -153,9 +145,8 @@ private fun SelectAllKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun CutKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
+private fun CutKey(modifier: Modifier = Modifier) {
 	OutlinedKey(
-		ims,
 		KeyContent("Cut", Icons.Filled.ContentCut),
 		modifier,
 	) {
@@ -167,9 +158,8 @@ private fun CutKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun CopyKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
+private fun CopyKey(modifier: Modifier = Modifier) {
 	OutlinedKey(
-		ims,
 		KeyContent("Copy", Icons.Filled.ContentCopy),
 		modifier,
 	) {
@@ -180,9 +170,8 @@ private fun CopyKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun PasteKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
+private fun PasteKey(modifier: Modifier = Modifier) {
 	OutlinedKey(
-		ims,
 		KeyContent("Paste", Icons.Filled.ContentPaste),
 		modifier,
 	) {
@@ -197,9 +186,8 @@ private fun PasteKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun BackspaceKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
+private fun BackspaceKey(modifier: Modifier = Modifier) {
 	OutlinedKey(
-		ims,
 		KeyContent("Backspace", Icons.AutoMirrored.Filled.Backspace),
 		modifier,
 	) {
@@ -207,45 +195,45 @@ private fun BackspaceKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
 	}
 }
 
-internal val editorPlane: Plane = Plane({ stringResource(R.string.editor_plane) }) { ims ->
+internal val editorPlane: Plane = Plane({ stringResource(R.string.editor_plane) }) {
 	Column {
 		Row(Modifier.weight(1F)) {
-			PlaneGoBackKey(ims, Modifier.weight(1F))
-			ClipboardPlaneNavigatorKey(ims, Modifier.weight(1F))
-			NavigatorPlaneNavigatorKey(ims, Modifier.weight(1F))
+			PlaneGoBackKey(Modifier.weight(1F))
+			ClipboardPlaneNavigatorKey(Modifier.weight(1F))
+			NavigatorPlaneNavigatorKey(Modifier.weight(1F))
 		}
 		Row(Modifier.weight(2F)) {
 			Column(Modifier.weight(2F)) {
-				LeftKey(ims, Modifier.weight(2F))
-				LeftMostKey(ims, Modifier.weight(1F))
+				LeftKey(Modifier.weight(2F))
+				LeftMostKey(Modifier.weight(1F))
 			}
 			Column(Modifier.weight(1F)) {
-				LeftKey(ims, Modifier.weight(1F), -1)
-				LeftMostKey(ims, Modifier.weight(1F), -1)
+				LeftKey(Modifier.weight(1F), -1)
+				LeftMostKey(Modifier.weight(1F), -1)
 			}
 			Column(Modifier.weight(1F)) {
-				RightKey(ims, Modifier.weight(1F), -1)
-				RightMostKey(ims, Modifier.weight(1F), -1)
+				RightKey(Modifier.weight(1F), -1)
+				RightMostKey(Modifier.weight(1F), -1)
 			}
 			Column(Modifier.weight(1F)) {
-				LeftKey(ims, Modifier.weight(1F), 1)
-				LeftMostKey(ims, Modifier.weight(1F), 1)
+				LeftKey(Modifier.weight(1F), 1)
+				LeftMostKey(Modifier.weight(1F), 1)
 			}
 			Column(Modifier.weight(1F)) {
-				RightKey(ims, Modifier.weight(1F), 1)
-				RightMostKey(ims, Modifier.weight(1F), 1)
+				RightKey(Modifier.weight(1F), 1)
+				RightMostKey(Modifier.weight(1F), 1)
 			}
 			Column(Modifier.weight(2F)) {
-				RightKey(ims, Modifier.weight(2F))
-				RightMostKey(ims, Modifier.weight(1F))
+				RightKey(Modifier.weight(2F))
+				RightMostKey(Modifier.weight(1F))
 			}
 		}
 		Row(Modifier.weight(1F)) {
-			SelectAllKey(ims, Modifier.weight(1F))
-			CutKey(ims, Modifier.weight(1F))
-			CopyKey(ims, Modifier.weight(1F))
-			PasteKey(ims, Modifier.weight(1F))
-			BackspaceKey(ims, Modifier.weight(1F))
+			SelectAllKey(Modifier.weight(1F))
+			CutKey(Modifier.weight(1F))
+			CopyKey(Modifier.weight(1F))
+			PasteKey(Modifier.weight(1F))
+			BackspaceKey(Modifier.weight(1F))
 		}
 	}
 }
@@ -283,7 +271,6 @@ internal fun ClipData.hashParcelled() =
 
 @Composable
 internal inline fun ClipDataRow(
-	ims: VwinngjuanIms,
 	text: String,
 	crossinline select: () -> Unit,
 ) {
@@ -292,13 +279,12 @@ internal inline fun ClipDataRow(
 			.width(CLIP_DATA_ROW_HEIGHT.dp)
 
 		OutlinedKey(
-			ims,
 			KeyContent(Icons.Filled.Info),
 			optionModifier,
 		) {
 			select()
 		}
-		OutlinedClickable(ims, { commitText(text) }, Modifier.weight(1F),
+		OutlinedClickable({ commitText(text) }, Modifier.weight(1F),
 			movedThreshold = 0F
 		) {
 			Box(Modifier.fillMaxSize(), Alignment.CenterStart) {
@@ -312,7 +298,6 @@ internal inline fun ClipDataRow(
 
 @Composable
 internal inline fun SelectedClipDataRow(
-	ims: VwinngjuanIms,
 	clip: ClipData,
 	clipIndex: Int,
 	itemIndex: Int,
@@ -323,14 +308,12 @@ internal inline fun SelectedClipDataRow(
 		val optionModifier = Modifier
 			.width(CLIP_DATA_ROW_HEIGHT.dp)
 		OutlinedKey(
-			ims,
 			KeyContent(Icons.Filled.ArrowBackIosNew),
 			optionModifier,
 		) {
 			goBack()
 		}
 		OutlinedKey(
-			ims,
 			KeyContent(Icons.Filled.DeleteForever),
 			optionModifier,
 		) {
@@ -346,14 +329,15 @@ internal inline fun SelectedClipDataRow(
 	}
 }
 
-internal val clipboardPlane = Plane({ stringResource(R.string.clipboard_plane) }) { ims ->
+internal val clipboardPlane = Plane({ stringResource(R.string.clipboard_plane) }) {
 	Column {
 		Row(Modifier.weight(1F)) {
-			PlaneGoBackKey(ims, Modifier.weight(1F))
-			EditorPlaneNavigatorKey(ims, Modifier.weight(1F))
-			NavigatorPlaneNavigatorKey(ims, Modifier.weight(1F))
+			PlaneGoBackKey(Modifier.weight(1F))
+			EditorPlaneNavigatorKey(Modifier.weight(1F))
+			NavigatorPlaneNavigatorKey(Modifier.weight(1F))
 		}
 
+		val ims = LocalVwinngjuanIms.current
 		val clipboardManager = remember { ims.getSystemService(ClipboardManager::class.java) }
 		val clips = remember { ims.readClipPreferences().toMutableStateList() }
 		val clipHashes = remember { clips.asSequence().map { it?.hashParcelled() }.toMutableSet() }
@@ -385,7 +369,7 @@ internal val clipboardPlane = Plane({ stringResource(R.string.clipboard_plane) }
 				items(clipTextItems) { (itemOrder, itemTriple) ->
 					val (clip, clipIndex, itemIndex) = itemTriple
 					if (itemOrder in selectedClipOrders) {
-						SelectedClipDataRow(ims, clip, clipIndex, itemIndex, {
+						SelectedClipDataRow(clip, clipIndex, itemIndex, {
 							clip.run { List(itemCount) { i ->
 								takeIf { i != itemIndex }?.getItemAt(i)
 							} }
@@ -404,12 +388,11 @@ internal val clipboardPlane = Plane({ stringResource(R.string.clipboard_plane) }
 							updateClips()
 						}) { selectedClipOrders.remove(itemOrder) }
 					} else {
-						ClipDataRow(ims, clip.getItemAt(itemIndex).text.toString()) { selectedClipOrders[itemOrder] = Unit }
+						ClipDataRow(clip.getItemAt(itemIndex).text.toString()) { selectedClipOrders[itemOrder] = Unit }
 					}
 				}
 			}
 			if (clipTextItems.isEmpty()) OutlinedKey(
-				ims,
 				KeyContent("No clip", Icons.Filled.Close),
 			) {
 				planeGoBack()

@@ -22,7 +22,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.buhzzi.vwinngjuanime.R
-import com.buhzzi.vwinngjuanime.VwinngjuanIms
 import com.buhzzi.vwinngjuanime.keyboards.KeyContent
 import com.buhzzi.vwinngjuanime.keyboards.OutlinedKey
 import com.buhzzi.vwinngjuanime.keyboards.OutlinedSpace
@@ -53,7 +52,6 @@ private var kanaVariation by mutableStateOf(KanaVariation.SEI)
 
 @Composable
 private fun KanaKey(
-	ims: VwinngjuanIms,
 	hiraganaSeiDesc: String,
 	hiraganaDakuDesc: String,
 	hiraganaHandakuDesc: String,
@@ -79,7 +77,6 @@ private fun KanaKey(
 		}
 	}
 	OutlinedKey(
-		ims,
 		KeyContent(desc),
 		modifier,
 		arrayOf(kanaType, kanaVariation),
@@ -90,12 +87,10 @@ private fun KanaKey(
 
 @Composable
 private fun ShiftKanaTypeKey(
-	ims: VwinngjuanIms,
 	targetKanaType: KanaType,
 	modifier: Modifier = Modifier,
 ) {
 	OutlinedKey(
-		ims,
 		KeyContent(when (targetKanaType) {
 			KanaType.HIRAGANA -> "平"
 			KanaType.KATAKANA -> "片"
@@ -109,12 +104,10 @@ private fun ShiftKanaTypeKey(
 
 @Composable
 private fun ShiftKanaVariationKey(
-	ims: VwinngjuanIms,
 	targetKanaVariation: KanaVariation,
 	modifier: Modifier = Modifier,
 ) {
 	OutlinedKey(
-		ims,
 		KeyContent(when (targetKanaVariation) {
 			KanaVariation.SEI -> "清"
 			KanaVariation.DAKU -> "濁"
@@ -128,9 +121,8 @@ private fun ShiftKanaVariationKey(
 }
 
 @Composable
-private fun SpecialsKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
+private fun SpecialsKey(modifier: Modifier = Modifier) {
 	OutlinedKey(
-		ims,
 		KeyContent(Icons.Filled.EmojiSymbols),
 		modifier,
 	) {
@@ -138,12 +130,12 @@ private fun SpecialsKey(ims: VwinngjuanIms, modifier: Modifier = Modifier) {
 	}
 }
 
-internal val kanaPlane: Plane = Plane({ stringResource(R.string.kana_plane) }) { ims ->
+internal val kanaPlane: Plane = Plane({ stringResource(R.string.kana_plane) }) {
 	CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
 		Column {
 			Row(Modifier.weight(1F)) {
-				MetaKey(ims, Modifier.weight(1F))
-				ShiftKanaTypeKey(ims, when (kanaType) {
+				MetaKey(Modifier.weight(1F))
+				ShiftKanaTypeKey(when (kanaType) {
 					KanaType.HIRAGANA -> KanaType.KATAKANA
 					KanaType.KATAKANA -> KanaType.HIRAGANA
 				}, Modifier.weight(1F))
@@ -154,246 +146,246 @@ internal val kanaPlane: Plane = Plane({ stringResource(R.string.kana_plane) }) {
 					KanaVariation.KOGAKI,
 				).forEach {
 					if (kanaVariation != it) {
-						ShiftKanaVariationKey(ims, it, Modifier.weight(1F))
+						ShiftKanaVariationKey(it, Modifier.weight(1F))
 					}
 				}
-				CtrlKey(ims, Modifier.weight(1F))
-				BackspaceKey(ims, Modifier.weight(1F))
+				CtrlKey(Modifier.weight(1F))
+				BackspaceKey(Modifier.weight(1F))
 			}
 			Row(Modifier.weight(4F)) {
 				Column(Modifier.weight(1F)) {
-					KanaKey(ims,
+					KanaKey(
 						"あ", "あ゙", "あ゚", "ぁ",
 						"ア", "ア゙", "ア゚", "ァ",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"い", "い゙", "い゚", "ぃ",
 						"イ", "イ゙", "イ゚", "ィ",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"う", "ゔ", "う゚", "ぅ",
 						"ウ", "ヴ", "ウ゚", "ゥ",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"え", "え゙", "え゚", "ぇ",
 						"エ", "エ゙", "エ゚", "ェ",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"お", "お゙", "お゚", "ぉ",
 						"オ", "オ゙", "オ゚", "ォ",
 					Modifier.weight(1F))
 				}
 				Column(Modifier.weight(1F)) {
-					KanaKey(ims,
+					KanaKey(
 						"か", "が", "か゚", "ゕ",
 						"カ", "ガ", "カ゚", "ヵ",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"き", "ぎ", "き゚", "",
 						"キ", "ギ", "キ゚", "",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"く", "ぐ", "く゚", "",
 						"ク", "グ", "ク゚", "ㇰ",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"け", "げ", "け゚", "ゖ",
 						"ケ", "ゲ", "ケ゚", "ヶ",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"こ", "ご", "こ゚", "",
 						"コ", "ゴ", "コ゚", "",
 					Modifier.weight(1F))
 				}
 				Column(Modifier.weight(1F)) {
-					KanaKey(ims,
+					KanaKey(
 						"さ", "ざ", "さ゚", "",
 						"サ", "ザ", "サ゚", "",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"し", "じ", "し゚", "",
 						"シ", "ジ", "シ゚", "ㇱ",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"す", "ず", "す゚", "",
 						"ス", "ズ", "ス゚", "ㇲ",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"せ", "ぜ", "せ゚", "",
 						"セ", "ゼ", "セ゚", "ㇳ",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"そ", "ぞ", "そ゚", "",
 						"ソ", "ゾ", "ソ゚", "ㇴ",
 					Modifier.weight(1F))
 				}
 				Column(Modifier.weight(1F)) {
-					KanaKey(ims,
+					KanaKey(
 						"た", "だ", "た゚", "",
 						"タ", "ダ", "タ゚", "",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"ち", "ぢ", "ち゚", "",
 						"チ", "ヂ", "チ゚", "",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"つ", "づ", "つ゚", "っ",
 						"ツ", "ヅ", "ツ゚", "",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"て", "で", "て゚", "",
 						"テ", "デ", "テ゚", "",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"と", "ど", "と゚", "",
 						"ト", "ド", "ト゚", "",
 					Modifier.weight(1F))
 				}
 				Column(Modifier.weight(1F)) {
-					KanaKey(ims,
+					KanaKey(
 						"な", "", "な゚", "",
 						"ナ", "", "ナ゚", "",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"に", "", "に゚", "",
 						"ニ", "", "ニ゚", "",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"ぬ", "", "ぬ゚", "",
 						"ヌ", "", "ヌ゚", "",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"ね", "", "ね゚", "",
 						"ネ", "", "ネ゚", "",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"の", "", "の゚", "",
 						"ノ", "", "ノ゚", "",
 					Modifier.weight(1F))
 				}
 				Column(Modifier.weight(1F)) {
-					KanaKey(ims,
+					KanaKey(
 						"は", "ば", "ぱ", "",
 						"ハ", "バ", "パ", "ㇵ",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"ひ", "び", "ぴ", "",
 						"ヒ", "ビ", "ピ", "ㇶ",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"ふ", "ぶ", "ぷ", "",
 						"フ", "ブ", "プ", "ㇷ",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"へ", "べ", "ぺ", "",
 						"ヘ", "ベ", "ペ", "ㇸ",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"ほ", "ぼ", "ぽ", "",
 						"ホ", "ボ", "ポ", "ㇹ",
 					Modifier.weight(1F))
 				}
 				Column(Modifier.weight(1F)) {
-					KanaKey(ims,
+					KanaKey(
 						"ま", "", "", "",
 						"マ", "", "", "",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"み", "", "", "",
 						"ミ", "", "", "",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"み", "", "", "",
 						"ム", "", "", "ㇺ",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"め", "", "", "",
 						"メ", "", "", "",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"も", "", "", "",
 						"モ", "", "", "",
 					Modifier.weight(1F))
 				}
 				Column(Modifier.weight(1F)) {
-					KanaKey(ims,
+					KanaKey(
 						"や", "", "", "ゃ",
 						"ヤ", "", "", "ャ",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"\uD82C\uDC06", "", "", "",
 						"\uD82C\uDD20", "", "", "",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"ゆ", "", "", "ゅ",
 						"ユ", "", "", "ュ",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"\uD82C\uDC01", "", "", "",
 						"\uD82C\uDD21", "", "", "",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"よ", "", "", "ょ",
 						"ヨ", "", "", "ョ",
 					Modifier.weight(1F))
 				}
 				Column(Modifier.weight(1F)) {
-					KanaKey(ims,
+					KanaKey(
 						"ら", "", "ら゚", "",
 						"ラ", "", "ラ゚", "ㇻ",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"り", "", "り゚", "",
 						"リ", "", "リ゚", "ㇼ",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"る", "", "る゚", "",
 						"ル", "", "ル゚", "ㇽ",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"れ", "", "れ゚", "",
 						"え", "", "え゚", "ㇾ",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"ろ", "", "ろ゚", "",
 						"ロ", "", "ロ゚", "ㇿ",
 					Modifier.weight(1F))
 				}
 				Column(Modifier.weight(1F)) {
-					KanaKey(ims,
+					KanaKey(
 						"わ", "わ゙", "", "",
 						"ワ", "ヷ", "", "ヮ",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"ゐ", "ゐ゙", "", "\uD82C\uDD50",
 						"ヰ", "ヸ", "", "\uD82C\uDD64",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"\uD82C\uDD1F", "", "", "\uD82C\uDD1F",
 						"\uD82C\uDD22", "", "", "\uD82C\uDD22",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"ゑ", "ゑ゙", "", "\uD82C\uDD51",
 						"ヱ", "ヹ", "", "\uD82C\uDD65",
 					Modifier.weight(1F))
-					KanaKey(ims,
+					KanaKey(
 						"を", "を゙", "", "\uD82C\uDD52",
 						"ヲ", "ヺ", "", "\uD82C\uDD66",
 					Modifier.weight(1F))
 				}
 			}
 			Row(Modifier.weight(1F)) {
-				SpecialsKey(ims, Modifier.weight(1F))
-				KanaKey(ims,
+				SpecialsKey(Modifier.weight(1F))
+				KanaKey(
 					"、", "、", "、", "、",
 					"！", "！", "！", "！",
 				Modifier.weight(1F))
-				SpaceKey(ims, Modifier.weight(4F))
-				KanaKey(ims,
+				SpaceKey(Modifier.weight(4F))
+				KanaKey(
 					"。", "。", "。", "。",
 					"？", "？", "？", "？",
 					Modifier.weight(1F))
-				KanaKey(ims,
+				KanaKey(
 					"ん", "", "", "",
 					"ン", "", "", "\uD82C\uDD67",
 				Modifier.weight(1F))
@@ -406,7 +398,7 @@ internal const val KANA_SPECIALS_TITLE_SIZE = 0x40
 internal const val KANA_SPECIALS_ITEM_ROW_SIZE = 0x40
 internal const val KANA_SPECIALS_ROW_COUNT = 4
 
-internal val kanaSpecialsPlane = Plane({ stringResource(R.string.kana_specials_plane) }) { ims ->
+internal val kanaSpecialsPlane = Plane({ stringResource(R.string.kana_specials_plane) }) {
 	CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
 		Column {
 			val categories = remember { mutableStateListOf(
@@ -446,7 +438,7 @@ internal val kanaSpecialsPlane = Plane({ stringResource(R.string.kana_specials_p
 			var selectedCategory by remember { mutableStateOf(categories.first().second) }
 			Row(Modifier.weight(1F)) {
 				OutlinedKey(
-					ims,
+
 					KeyContent(Icons.AutoMirrored.Filled.ArrowBackIos),
 					Modifier.weight(1F),
 				) {
@@ -456,7 +448,7 @@ internal val kanaSpecialsPlane = Plane({ stringResource(R.string.kana_specials_p
 					LazyRow {
 						items(categories) { (categoryTitle, category) ->
 							OutlinedKey(
-								ims,
+
 								KeyContent(categoryTitle),
 								Modifier.width(KANA_SPECIALS_TITLE_SIZE.dp),
 							) {
@@ -465,7 +457,7 @@ internal val kanaSpecialsPlane = Plane({ stringResource(R.string.kana_specials_p
 						}
 					}
 				}
-				BackspaceKey(ims, Modifier.weight(1F))
+				BackspaceKey(Modifier.weight(1F))
 			}
 			OutlinedSpace(Modifier.weight(4F)) {
 				LazyRow {
@@ -475,7 +467,7 @@ internal val kanaSpecialsPlane = Plane({ stringResource(R.string.kana_specials_p
 						Column(Modifier.width(KANA_SPECIALS_ITEM_ROW_SIZE.dp)) {
 							row.forEach { (text, label) ->
 								OutlinedKey(
-									ims,
+
 									KeyContent(label),
 									Modifier.weight(1F),
 								) {
