@@ -134,6 +134,52 @@ internal fun EnterKey(modifier: Modifier = Modifier) {
 	}
 }
 
+@Composable
+internal fun WithActionKey(
+	modifier: Modifier = Modifier,
+	content: @Composable () -> Unit
+) {
+	Row(modifier) {
+		val ims = LocalVwinngjuanIms.current
+		when (ims.imeOptions and EditorInfo.IME_MASK_ACTION) {
+			EditorInfo.IME_ACTION_GO -> {
+				println("ime action go")
+				content()
+				ActionGoKey(Modifier.weight(1F))
+			}
+			EditorInfo.IME_ACTION_SEARCH -> {
+				println("ime action search")
+				content()
+				ActionSearchKey(Modifier.weight(1F))
+			}
+			EditorInfo.IME_ACTION_SEND -> {
+				println("ime action send")
+				content()
+				ActionSendKey(Modifier.weight(1F))
+			}
+			EditorInfo.IME_ACTION_NEXT -> {
+				println("ime action next")
+				content()
+				ActionNextKey(Modifier.weight(1F))
+			}
+			EditorInfo.IME_ACTION_DONE -> {
+				println("ime action done")
+				content()
+				ActionDoneKey(Modifier.weight(1F))
+			}
+			EditorInfo.IME_ACTION_PREVIOUS -> {
+				println("ime action previous")
+				content()
+				ActionPreviousKey(Modifier.weight(1F))
+			}
+			else -> {
+				println("no ime action")
+				content()
+			}
+		}
+	}
+}
+
 internal val qwertyPlane: Plane = Plane({ stringResource(R.string.qwerty_plane) }) {
 	Column {
 		Row(Modifier.weight(1F)) {
@@ -200,43 +246,8 @@ internal val qwertyPlane: Plane = Plane({ stringResource(R.string.qwerty_plane) 
 			MetaKey(Modifier.weight(1F))
 			SpaceKey(Modifier.weight(4F))
 			CtrlKey(Modifier.weight(1F))
-			val ims = LocalVwinngjuanIms.current
-			(ims.imeOptions and EditorInfo.IME_MASK_ACTION).also { println("${ims.imeOptions.toString(0x10)} after masked: ${it.toString(0x10)}") }
-			when (ims.imeOptions and EditorInfo.IME_MASK_ACTION) {
-				EditorInfo.IME_ACTION_GO -> {
-					println("ime action go")
-					EnterKey(Modifier.weight(1F))
-					ActionGoKey(Modifier.weight(1F))
-				}
-				EditorInfo.IME_ACTION_SEARCH -> {
-					println("ime action search")
-					EnterKey(Modifier.weight(1F))
-					ActionSearchKey(Modifier.weight(1F))
-				}
-				EditorInfo.IME_ACTION_SEND -> {
-					println("ime action send")
-					EnterKey(Modifier.weight(1F))
-					ActionSendKey(Modifier.weight(1F))
-				}
-				EditorInfo.IME_ACTION_NEXT -> {
-					println("ime action next")
-					EnterKey(Modifier.weight(1F))
-					ActionNextKey(Modifier.weight(1F))
-				}
-				EditorInfo.IME_ACTION_DONE -> {
-					println("ime action done")
-					EnterKey(Modifier.weight(1F))
-					ActionDoneKey(Modifier.weight(1F))
-				}
-				EditorInfo.IME_ACTION_PREVIOUS -> {
-					println("ime action previous")
-					EnterKey(Modifier.weight(1F))
-					ActionPreviousKey(Modifier.weight(1F))
-				}
-				else -> {
-					println("no ime action")
-					EnterKey(Modifier.weight(2F))
-				}
+			WithActionKey(Modifier.weight(2F)) {
+				EnterKey(Modifier.weight(1F))
 			}
 		}
 	}

@@ -30,16 +30,15 @@ import com.buhzzi.vwinngjuanime.keyboards.tzuih.vwinngjuanPlane
 
 internal fun VwinngjuanIms.planeGoBack() {
 	planeStack.apply {
-		if (size > 1) {
+		if (size > 0x1) {
 			removeLastOrNull()!!.finish(this@planeGoBack)
 		}
 	}
 }
 
 internal fun VwinngjuanIms.goToPlane(plane: Plane) {
-	currentPlane.finish(this)
 	planeStack.apply {
-		if (size > 1) {
+		if (size > 0x1) {
 			remove(plane)
 			add(plane)
 		}
@@ -51,13 +50,13 @@ internal fun VwinngjuanIms.showImPicker() {
 }
 
 internal fun VwinngjuanIms.commitText(text: CharSequence) {
-	currentInputConnection?.commitText(text, 1)
+	currentInputConnection?.commitText(text, 0x1)
 }
 
 internal fun VwinngjuanIms.backspaceText() {
 	currentInputConnection?.apply {
-		getSelectedText(0)?.also { commitText("", 0) }
-			?: deleteSurroundingText(1, 0)
+		getSelectedText(0x0)?.also { commitText("", 0x0) }
+			?: deleteSurroundingText(0x1, 0x0)
 	}
 }
 
