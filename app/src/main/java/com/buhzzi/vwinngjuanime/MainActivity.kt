@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedButton
 import androidx.compose.material.OutlinedTextField
@@ -103,6 +104,7 @@ internal fun ThemeWrapComposable(content: @Composable () -> Unit) {
 internal fun SettingsComposable(navController: NavController) {
 	val context = LocalContext.current
 	Column(Modifier
+		.safeDrawingPadding()
 		.fillMaxSize(),
 		Arrangement.Center,
 		Alignment.CenterHorizontally,

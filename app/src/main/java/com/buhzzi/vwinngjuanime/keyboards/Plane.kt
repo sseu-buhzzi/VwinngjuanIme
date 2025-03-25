@@ -66,9 +66,6 @@ internal suspend fun AwaitPointerEventScope.awaitPointerStatus(movedThreshold: F
 			else -> PointerStatus.HELD
 		}
 	}
-		.also {
-//			println("await   $it")
-		}
 
 internal suspend fun AwaitPointerEventScope.timeoutPointerStatus(time: Long, movedThreshold: Float) =
 	/*

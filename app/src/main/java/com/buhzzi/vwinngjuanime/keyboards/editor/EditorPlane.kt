@@ -4,6 +4,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.util.Base64
+import android.view.inputmethod.ExtractedTextRequest
 import android.view.inputmethod.InputConnection
 import androidx.annotation.IntRange
 import androidx.compose.foundation.horizontalScroll
@@ -62,19 +63,19 @@ import com.buhzzi.vwinngjuanime.toBytes
 import java.math.BigInteger
 
 private inline fun InputConnection.doWithCarets(block: InputConnection.(Int, Int) -> Unit) {
-	getTextBeforeCursor(Int.MAX_VALUE, 0)?.length?.also { leftLength ->
-		val midLength = getSelectedText(0)?.length ?: 0
+	getTextBeforeCursor(Int.MAX_VALUE, 0x0)?.length?.also { leftLength ->
+		val midLength = getSelectedText(0x0)?.length ?: 0x0
 		block(leftLength, leftLength + midLength)
 	}
 }
 
-private fun InputConnection.applyCarets(@IntRange(-1, 1) carets: Int, block: (Pair<Int, Int>) -> Pair<Int, Int>) {
+private fun InputConnection.applyCarets(@IntRange(-0x1, 0x1) carets: Int, block: (Pair<Int, Int>) -> Pair<Int, Int>) {
 	doWithCarets { left, right ->
 		val (newLeft, newRight) = block(left to right)
 		when (carets) {
-			-1 -> setSelection(newLeft, right)
-			0 -> setSelection(newLeft, newRight)
-			1 -> setSelection(left, newRight)
+			-0x1 -> setSelection(newLeft, right)
+			0x0 -> setSelection(newLeft, newRight)
+			0x1 -> setSelection(left, newRight)
 			else -> error("Invalid carets value: $carets.")
 		}
 	}
@@ -83,27 +84,27 @@ private fun InputConnection.applyCarets(@IntRange(-1, 1) carets: Int, block: (Pa
 @Composable
 private fun LeftKey(
 	modifier: Modifier = Modifier,
-	@IntRange(-1, 1) carets: Int = 0,
+	@IntRange(-0x1, 0x1) carets: Int = 0x0,
 ) {
 	OutlinedKey(
 		KeyContent(Icons.AutoMirrored.Filled.KeyboardArrowLeft),
 		modifier,
 	) {
-		currentInputConnection?.applyCarets(carets) { (left, right) -> left - 1 to right - 1 }
+		currentInputConnection?.applyCarets(carets) { (left, right) -> left - 0x1 to right - 0x1 }
 	}
 }
 
 @Composable
 private fun RightKey(
 	modifier: Modifier = Modifier,
-	@IntRange(-1, 1) carets: Int = 0,
+	@IntRange(-0x1, 0x1) carets: Int = 0x0,
 ) {
 	OutlinedKey(
 		KeyContent(Icons.AutoMirrored.Filled.KeyboardArrowRight),
 		modifier,
 	) {
 		currentInputConnection?.apply {
-			applyCarets(carets) { (left, right) -> left + 1 to right + 1 }
+			applyCarets(carets) { (left, right) -> left + 0x1 to right + 0x1 }
 		}
 	}
 }
@@ -111,26 +112,29 @@ private fun RightKey(
 @Composable
 private fun LeftMostKey(
 	modifier: Modifier = Modifier,
-	@IntRange(-1, 1) carets: Int = 0,
+	@IntRange(-0x1, 0x1) carets: Int = 0x0,
 ) {
 	OutlinedKey(
 		KeyContent(Icons.Filled.KeyboardDoubleArrowLeft),
 		modifier,
 	) {
-		currentInputConnection?.applyCarets(carets) { 0 to 0 }
+		currentInputConnection?.applyCarets(carets) { 0x0 to 0x0 }
 	}
 }
 
 @Composable
 private fun RightMostKey(
 	modifier: Modifier = Modifier,
-	@IntRange(-1, 1) carets: Int = 0,
+	@IntRange(-0x1, 0x1) carets: Int = 0x0,
 ) {
 	OutlinedKey(
 		KeyContent(Icons.Filled.KeyboardDoubleArrowRight),
 		modifier,
 	) {
-		currentInputConnection?.applyCarets(carets) { Int.MAX_VALUE to Int.MAX_VALUE }
+		currentInputConnection?.apply {
+			val length = getExtractedText(ExtractedTextRequest(), 0x0)?.text?.length ?: Int.MAX_VALUE
+			applyCarets(carets) { length to length }
+		}
 	}
 }
 
@@ -140,7 +144,10 @@ private fun SelectAllKey(modifier: Modifier = Modifier) {
 		KeyContent("Select All", Icons.Filled.SelectAll),
 		modifier,
 	) {
-		currentInputConnection?.setSelection(0, Int.MAX_VALUE)
+		currentInputConnection?.apply {
+			val length = getExtractedText(ExtractedTextRequest(), 0x0)?.text?.length ?: Int.MAX_VALUE
+			setSelection(0x0, length)
+		}
 	}
 }
 
@@ -151,8 +158,8 @@ private fun CutKey(modifier: Modifier = Modifier) {
 		modifier,
 	) {
 		currentInputConnection?.apply {
-			addPlainTextClipData(getSelectedText(0))
-			commitText("", 0)
+			addPlainTextClipData(getSelectedText(0x0))
+			commitText("", 0x0)
 		}
 	}
 }
@@ -164,7 +171,7 @@ private fun CopyKey(modifier: Modifier = Modifier) {
 		modifier,
 	) {
 		currentInputConnection?.apply {
-			addPlainTextClipData(getSelectedText(0))
+			addPlainTextClipData(getSelectedText(0x0))
 		}
 	}
 }
@@ -208,20 +215,20 @@ internal val editorPlane: Plane = Plane({ stringResource(R.string.editor_plane) 
 				LeftMostKey(Modifier.weight(1F))
 			}
 			Column(Modifier.weight(1F)) {
-				LeftKey(Modifier.weight(1F), -1)
-				LeftMostKey(Modifier.weight(1F), -1)
+				LeftKey(Modifier.weight(1F), -0x1)
+				LeftMostKey(Modifier.weight(1F), -0x1)
 			}
 			Column(Modifier.weight(1F)) {
-				RightKey(Modifier.weight(1F), -1)
-				RightMostKey(Modifier.weight(1F), -1)
+				RightKey(Modifier.weight(1F), -0x1)
+				RightMostKey(Modifier.weight(1F), -0x1)
 			}
 			Column(Modifier.weight(1F)) {
-				LeftKey(Modifier.weight(1F), 1)
-				LeftMostKey(Modifier.weight(1F), 1)
+				LeftKey(Modifier.weight(1F), 0x1)
+				LeftMostKey(Modifier.weight(1F), 0x1)
 			}
 			Column(Modifier.weight(1F)) {
-				RightKey(Modifier.weight(1F), 1)
-				RightMostKey(Modifier.weight(1F), 1)
+				RightKey(Modifier.weight(1F), 0x1)
+				RightMostKey(Modifier.weight(1F), 0x1)
 			}
 			Column(Modifier.weight(2F)) {
 				RightKey(Modifier.weight(2F))
@@ -251,7 +258,7 @@ internal fun VwinngjuanIms.writeClipPreferences(clips: List<ClipData?>) {
 		putInt("size", clips.size)
 		clips.forEachIndexed { i, clip ->
 			clip?.toBytes()
-				?.let { Base64.encodeToString(it, 0) }
+				?.let { Base64.encodeToString(it, 0x0) }
 				?.let { putString("$i", it) }
 		}
 	}
@@ -259,7 +266,7 @@ internal fun VwinngjuanIms.writeClipPreferences(clips: List<ClipData?>) {
 
 internal fun VwinngjuanIms.readClipPreferences() =
 	getSharedPreferences("clip", Context.MODE_PRIVATE).run {
-		List(getInt("size", 0)) { i ->
+		List(getInt("size", 0x0)) { i ->
 			getString("$i", null)
 				?.let { Base64.decode(it, Base64.DEFAULT) }
 				?.let { ClipData.CREATOR.fromBytes(it) }
@@ -359,7 +366,7 @@ internal val clipboardPlane = Plane({ stringResource(R.string.clipboard_plane) }
 			val clipTextItems = clips.asSequence().withIndex().flatMap { (clipIndex, clip) ->
 				sequence {
 					clip?.run {
-						for (i in 0 ..< itemCount) {
+						for (i in 0x0 ..< itemCount) {
 							getItemAt(i).text?.let { yield(Triple(this, clipIndex, i)) }
 						}
 					}

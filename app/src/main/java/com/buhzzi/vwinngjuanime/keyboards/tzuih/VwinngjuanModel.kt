@@ -1,43 +1,104 @@
 package com.buhzzi.vwinngjuanime.keyboards.tzuih
 
-import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.util.fastFlatMap
-import androidx.compose.ui.util.fastForEachIndexed
+import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastJoinToString
 import androidx.compose.ui.util.fastMap
 import androidx.compose.ui.util.fastMapIndexed
 import com.buhzzi.vwinngjuanime.VwinngjuanIms
 import com.buhzzi.vwinngjuanime.keyboards.KeyContent
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeoutOrNull
 import java.lang.ref.WeakReference
-import java.net.HttpURLConnection
 import java.net.URL
+import java.nio.ByteBuffer
 import java.nio.channels.Channels
 import java.nio.channels.FileChannel
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
+import java.security.MessageDigest
 import kotlin.io.path.div
 import kotlin.io.path.notExists
+import kotlin.io.path.readBytes
 import kotlin.io.path.useLines
+import kotlin.io.path.writeBytes
 import kotlin.system.exitProcess
 
-private fun VwinngjuanIms.downloadVwinngjuanResource(name: String) = (run {
-	getExternalFilesDir("vwinngjuan") ?: error("Cannot open vwinngjuan files dir.")
-}.toPath() / name).also { filePath ->
-	if (filePath.notExists()) {
-		val conn = URL("https://381-02007.buhzzi.com/permitted/vwinngjuan/$name").openConnection() as HttpURLConnection
-		conn.connect()
-		conn.responseCode == HttpURLConnection.HTTP_OK || error("Server responds with $conn")
-		Channels.newChannel(conn.inputStream).use { `in` ->
+internal var vwinngjuanResourceName by mutableStateOf<String?>(null)
+
+internal var vwinngjuanResourceDownloaded by mutableLongStateOf(0)
+
+private fun VwinngjuanIms.validateVwinngjuanResource(name: String) = run {
+	println("Validate $name")
+	val vwinngjuanFilesDir = run {
+		getExternalFilesDir("vwinngjuan") ?: error("Cannot open vwinngjuan files dir.")
+	}.toPath()
+	val filePath = vwinngjuanFilesDir / name
+	if (
+		filePath.notExists() ||
+		run {
+			val hashPath = vwinngjuanFilesDir / "$name.sha256"
+			println("File $name exists. Checking SHA-256 sum.")
+			val hash = runBlocking {
+				withTimeoutOrNull(0x1000) {
+					runCatching {
+
+						URL("https://381-02007.buhzzi.com/permitted/vwinngjuan/$name.sha256").readBytes().also {
+							println("Fetched hash.")
+							hashPath.writeBytes(it)
+						}
+
+					}.getOrNull()
+				} ?: hashPath.readBytes().also {
+					println("Use old hash.")
+				}
+			}
+			fun ByteArray.toBigIntString() = joinToString("") {
+				it.toUByte().toString(0x10).padStart(0x2, '0')
+			}
+			println("Given SHA-256 sum: ${hash.toBigIntString()}")
+			val digest = MessageDigest.getInstance("SHA-256")
+			val buffer = ByteBuffer.allocate(DEFAULT_BUFFER_SIZE)
+			FileChannel.open(filePath).use { `in` ->
+				while (`in`.read(buffer) != -1) {
+					buffer.flip()
+					digest.update(buffer)
+					buffer.clear()
+				}
+			}
+			!digest.digest().also { calcHash ->
+				println("Digest: ${calcHash.toBigIntString()}")
+			}.contentEquals(hash)
+		}
+	) {
+		println("Start downloading vwinngjuan resource $name.")
+		vwinngjuanResourceName = name
+		Channels.newChannel(URL("https://381-02007.buhzzi.com/permitted/vwinngjuan/$name").openStream()).use { `in` ->
 			FileChannel.open(
 				filePath,
 				StandardOpenOption.WRITE,
 				StandardOpenOption.TRUNCATE_EXISTING,
 				StandardOpenOption.CREATE,
 			).use { out ->
-				out.transferFrom(`in`, 0, Long.MAX_VALUE)
+				val buffer = ByteBuffer.allocate(DEFAULT_BUFFER_SIZE)
+				var transferred = 0x0L
+				vwinngjuanResourceDownloaded = 0x0
+				while (`in`.read(buffer).also { transferred += it } != -0x1) {
+					vwinngjuanResourceDownloaded = transferred
+					buffer.flip()
+					out.write(buffer)
+					buffer.clear()
+					Thread.sleep(0x4)
+				}
+				vwinngjuanResourceName = null
 			}
 		}
 	}
+	filePath
 }
 
 internal fun <T> Path.useTsv(block: Sequence<List<String>>.() -> T) = useLines { lines ->
@@ -55,13 +116,13 @@ internal fun <T> Path.useTsv(block: Sequence<List<String>>.() -> T) = useLines {
 
 
 internal class TzhuNode(
-	tzhuComposer: TzhuComposer,
+	private val tzhuComposer: WeakReference<TzhuComposer>,
 	private val parent: TzhuNode?,
 	private val code: Int,
 ) {
-	val children by lazy { arrayOfNulls<TzhuNode>(tzhuComposer.fullVwinList.size) }
+	val children by lazy { arrayOfNulls<TzhuNode>(tzhuComposer.get()!!.fullVwinList.size) }
 
-	var tzuihUni: String? = null
+	val tzuihList = mutableListOf<String>()
 
 	private val path
 		get() = run {
@@ -75,17 +136,12 @@ internal class TzhuNode(
 			}.toList().asReversed()
 		}
 
-	@Deprecated(
-		"Default toString won't provide tree node names.",
-		ReplaceWith("toString(tzhuComposer)")
-	)
-	override fun toString() = super.toString()
+	val pathString
+		get() = path.fastJoinToString(" ") { "${it.toString(0x10)}:${tzhuComposer.get()?.fullVwinList?.get(it)?.label}" }
 
-	fun toString(tzhuComposer: TzhuComposer) = """TzhuNode($tzuihUni, "${
-		path.fastJoinToString(" ") { "$it/${tzhuComposer.fullVwinList[it].label}" }
-	}")"""
+	override fun toString() = """TzhuNode(${tzuihList.getOrNull(0x0)}, "$pathString")"""
 
-	fun createChild(tzhuComposer: TzhuComposer, code: Int) = TzhuNode(tzhuComposer, this, code).also {
+	fun createChild(code: Int) = TzhuNode(tzhuComposer, this, code).also {
 		children[code] = it
 	}
 }
@@ -102,33 +158,34 @@ internal class ComposingVwinStack(
 	private val ims: WeakReference<VwinngjuanIms>,
 	private val tzhuComposer: WeakReference<TzhuComposer>,
 ) {
-	private val list = mutableStateListOf<VwinInfo>()
+	private val vwinList = mutableListOf<VwinInfo>()
+
+	val tzhuList = mutableListOf<Pair<TzhuNode, Int>>()
 
 	val notEmpty
-		get() = list.isNotEmpty()
+		get() = vwinList.isNotEmpty()
 
 	private fun update() {
-		ims.get()?.run {
-			currentInputConnection.setComposingText(buildTzuih(), 1)
-		}
+		collectNodes()
+		dumpTzuih()
 	}
 
 	fun clear() {
-		list.clear()
+		vwinList.clear()
 		update()
 	}
 
 	fun push(code: VwinInfo) {
-		list.add(code)
+		vwinList.add(code)
 		update()
 	}
 
 	fun pop() {
-		list.removeAt(list.lastIndex)
+		vwinList.removeAt(vwinList.lastIndex)
 		update()
 	}
 
-	fun buildTzuih() = mutableListOf<String>().apply {
+	private fun collectNodes() {
 //			TODO 偵錯用。
 //			list.run {
 //				clear()
@@ -137,25 +194,40 @@ internal class ComposingVwinStack(
 //					.let { addAll(it) }
 //			}
 		tzhuComposer.get()?.also { tzhuComposer ->
-			var nextAvailable = 0
-			do {
+			tzhuList.clear()
+			var nextAvailable = 0x0
+			while (nextAvailable < vwinList.size) {
 				var node = tzhuComposer.root
-				add("")
-				for (i in nextAvailable ..< list.size) {
-					val code = tzhuComposer.vwinCodeMap[list[i].label]!!
+				var availableNode: TzhuNode? = null
+				for (i in nextAvailable ..< vwinList.size) {
+					val code = tzhuComposer.vwinCodeMap[vwinList[i].label]!!
 					val child = node.children[code] ?: break
 					node = child
-					node.tzuihUni?.also {
-						nextAvailable = i + 1
-						this[lastIndex] = it
+					node.takeIf { it.tzuihList.isNotEmpty() }?.also {
+						nextAvailable = i + 0x1
+						availableNode = it
 					}
 //					TODO 偵錯用。
-					println("${nextAvailable - 1}\t$i\t${list[i]}\t$node\t$this")
+// 					println("${nextAvailable - 1}\t$i\t${vwinList[i]}\t$node\t$this")
 				}
-			} while (nextAvailable < list.size)
+				tzhuList.add(availableNode!! to 0x0)
+			}
 			// TODO 特殊處理擴展區字元。
 		}
-	}.fastJoinToString("")
+	}
+
+	fun buildTzuih() = run {
+		println(tzhuList)
+		tzhuList.fastJoinToString("") { (node, selection) ->
+			node.tzuihList[selection]
+		}
+	}
+
+	fun dumpTzuih() {
+		ims.get()?.run {
+			currentInputConnection.setComposingText(buildTzuih(), 1)
+		}
+	}
 }
 
 
@@ -167,7 +239,7 @@ internal class ComposingVwinStack(
 
 
 internal class TzhuComposer(ims: VwinngjuanIms) {
-	private val lejList: List<LejInfo> = ims.downloadVwinngjuanResource("lej.tsv").useTsv {
+	private val lejList: List<LejInfo> = ims.validateVwinngjuanResource("lej.tsv").useTsv {
 		map { (lej, vwinList) ->
 			val keyMapPattern = lejKeyMapPatternMap[lej] ?: error("Cannot find key map pattern for lej $lej.")
 			LejInfo(lej, keyMapPattern, vwinList.split(' ').fastMap { vwinLabel ->
@@ -179,7 +251,7 @@ internal class TzhuComposer(ims: VwinngjuanIms) {
 
 	val lejKeyMap: Map<Char, LejKeyAction> = generateKeyMapFromPattern(lejList.fastMapIndexed { lejIndex, lejInfo ->
 		LejKeyAction(KeyContent(lejInfo.label.run {
-			substring(0, offsetByCodePoints(0, 1))
+			substring(0x0, offsetByCodePoints(0x0, 0x1))
 		})) { keyMap = vwinKeyMapList[lejIndex] }
 	}, LEJ_KEY_MAP_PATTERN)
 		.also { keyMap = it }
@@ -207,7 +279,7 @@ internal class TzhuComposer(ims: VwinngjuanIms) {
 
 	val vwinCodeMap = fullVwinList.withIndex().associate { (code, vwin) -> vwin.label to code }
 
-	val root = TzhuNode(this, null, 0)
+	val root = TzhuNode(WeakReference(this), null, 0x0)
 
 	val vwinStack = ComposingVwinStack(WeakReference(ims), WeakReference(this))
 
@@ -231,37 +303,38 @@ internal class TzhuComposer(ims: VwinngjuanIms) {
 		}
 	}
 
-	private fun createOnPath(path: List<Int>, tzuihUni: String) {
+	private fun createOnPath(path: List<Int>) = run {
 		var node = root
-		path.fastForEachIndexed { i, code ->
-			val child = node.children[code]
-			when {
-				i != path.lastIndex ->
-					node = child ?: node.createChild(this, code)
-				child != null -> {
-					child.tzuihUni == null ||
-						error("Duplicated tzuih $tzuihUni on ${node.children[code]?.toString(this)}.")
-					child.tzuihUni = tzuihUni
-				}
-				else ->
-					node.createChild(this, code).tzuihUni = tzuihUni
-			}
+		path.fastForEach { code ->
+			node = node.children[code] ?: node.createChild(code)
 		}
+		node
 	}
 
 	init {
-		val tzhuMap = ims.downloadVwinngjuanResource("tzhu.tsv").useTsv {
-			associate { (tzuihUni, tzhu) ->
-				tzuihUni to (tzhu.takeIf { it.isNotEmpty() }?.split(' ') ?: emptyList())
+		val tzhuMap = ims.validateVwinngjuanResource("tzhu.tsv").useTsv {
+			associate { (tzuih, tzhu) ->
+				tzuih to (tzhu.takeIf { it.isNotEmpty() }?.split(' ') ?: emptyList())
 			}
 		}
 		val nodeMap = mutableMapOf<String, List<Int>>()
-		fun resolveNodePath(tzuihUni: String): List<Int> = nodeMap.getOrPut(tzuihUni) {
-			(vwinCodeMap[tzuihUni]?.let { listOf(it) } ?: (tzhuMap[tzuihUni] ?: run {
-				error("Tzuih $tzuihUni not found.")
+		fun resolveNodePath(tzuih: String): List<Int> = nodeMap.getOrPut(tzuih) {
+			(vwinCodeMap[tzuih]?.let { listOf(it) } ?: (tzhuMap[tzuih] ?: run {
+				error("Tzuih $tzuih not found.")
 			}).fastFlatMap { resolveNodePath(it) })
-				.also { createOnPath(it, tzuihUni) }
+				.also { tzhu ->
+					val node = createOnPath(tzhu)
+					node.tzuihList.add(tzuih)
+					lastCreatedTzhu = tzuih to node
+				}
 		}
-		tzhuMap.keys.forEach { tzuihUni -> resolveNodePath(tzuihUni) }
+		tzhuMap.keys.forEach { tzuih -> resolveNodePath(tzuih) }
+		lastCreatedTzhu = null
+	}
+
+	companion object {
+		var lastCreatedTzhu by mutableStateOf<Pair<String, TzhuNode>?>(null)
 	}
 }
+
+internal var savedTzhuComposer by mutableStateOf<TzhuComposer?>(null)

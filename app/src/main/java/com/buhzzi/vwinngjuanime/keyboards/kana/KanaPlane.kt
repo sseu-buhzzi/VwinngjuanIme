@@ -30,8 +30,10 @@ import com.buhzzi.vwinngjuanime.keyboards.commitText
 import com.buhzzi.vwinngjuanime.keyboards.goToPlane
 import com.buhzzi.vwinngjuanime.keyboards.latin.BackspaceKey
 import com.buhzzi.vwinngjuanime.keyboards.latin.CtrlKey
+import com.buhzzi.vwinngjuanime.keyboards.latin.EnterKey
 import com.buhzzi.vwinngjuanime.keyboards.latin.MetaKey
 import com.buhzzi.vwinngjuanime.keyboards.latin.SpaceKey
+import com.buhzzi.vwinngjuanime.keyboards.latin.WithActionKey
 import com.buhzzi.vwinngjuanime.keyboards.planeGoBack
 
 private enum class KanaType {
@@ -135,6 +137,7 @@ internal val kanaPlane: Plane = Plane({ stringResource(R.string.kana_plane) }) {
 		Column {
 			Row(Modifier.weight(1F)) {
 				MetaKey(Modifier.weight(1F))
+				SpecialsKey(Modifier.weight(1F))
 				ShiftKanaTypeKey(when (kanaType) {
 					KanaType.HIRAGANA -> KanaType.KATAKANA
 					KanaType.KATAKANA -> KanaType.HIRAGANA
@@ -375,20 +378,22 @@ internal val kanaPlane: Plane = Plane({ stringResource(R.string.kana_plane) }) {
 				}
 			}
 			Row(Modifier.weight(1F)) {
-				SpecialsKey(Modifier.weight(1F))
+				KanaKey(
+					"。", "。", "。", "。",
+					"？", "？", "？", "？",
+					Modifier.weight(1F))
 				KanaKey(
 					"、", "、", "、", "、",
 					"！", "！", "！", "！",
 				Modifier.weight(1F))
 				SpaceKey(Modifier.weight(4F))
 				KanaKey(
-					"。", "。", "。", "。",
-					"？", "？", "？", "？",
-					Modifier.weight(1F))
-				KanaKey(
 					"ん", "", "", "",
 					"ン", "", "", "\uD82C\uDD67",
 				Modifier.weight(1F))
+				WithActionKey(Modifier.weight(2F)) {
+					EnterKey(Modifier.weight(1F))
+				}
 			}
 		}
 	}
@@ -396,7 +401,7 @@ internal val kanaPlane: Plane = Plane({ stringResource(R.string.kana_plane) }) {
 
 internal const val KANA_SPECIALS_TITLE_SIZE = 0x40
 internal const val KANA_SPECIALS_ITEM_ROW_SIZE = 0x40
-internal const val KANA_SPECIALS_ROW_COUNT = 4
+internal const val KANA_SPECIALS_ROW_COUNT = 0x4
 
 internal val kanaSpecialsPlane = Plane({ stringResource(R.string.kana_specials_plane) }) {
 	CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
@@ -430,15 +435,10 @@ internal val kanaSpecialsPlane = Plane({ stringResource(R.string.kana_specials_p
 					'㎀' .. '㏟',
 					'㏿' .. '㏿',
 				).flatten().map { "$it" to "$it" },
-//				R.string.qwerty_plane,
-//				R.string.qwerty_plane,
-//				R.string.qwerty_plane,
-//				R.string.qwerty_plane,
 			) }
 			var selectedCategory by remember { mutableStateOf(categories.first().second) }
 			Row(Modifier.weight(1F)) {
 				OutlinedKey(
-
 					KeyContent(Icons.AutoMirrored.Filled.ArrowBackIos),
 					Modifier.weight(1F),
 				) {
@@ -448,9 +448,9 @@ internal val kanaSpecialsPlane = Plane({ stringResource(R.string.kana_specials_p
 					LazyRow {
 						items(categories) { (categoryTitle, category) ->
 							OutlinedKey(
-
 								KeyContent(categoryTitle),
 								Modifier.width(KANA_SPECIALS_TITLE_SIZE.dp),
+								movedThreshold = 0F,
 							) {
 								selectedCategory = category
 							}
@@ -467,14 +467,14 @@ internal val kanaSpecialsPlane = Plane({ stringResource(R.string.kana_specials_p
 						Column(Modifier.width(KANA_SPECIALS_ITEM_ROW_SIZE.dp)) {
 							row.forEach { (text, label) ->
 								OutlinedKey(
-
 									KeyContent(label),
 									Modifier.weight(1F),
+									movedThreshold = 0F,
 								) {
 									commitText(text)
 								}
 							}
-							(KANA_SPECIALS_ROW_COUNT - row.size).takeIf { it > 0 }?.apply {
+							(KANA_SPECIALS_ROW_COUNT - row.size).takeIf { it > 0x0 }?.apply {
 								Box(Modifier.weight(toFloat()))
 							}
 						}
