@@ -1,23 +1,39 @@
 package com.buhzzi.vwinngjuanime.keyboards.tzuih
 
+import android.text.format.Formatter
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Backspace
 import androidx.compose.material.icons.automirrored.filled.KeyboardReturn
+import androidx.compose.material.icons.automirrored.filled.NavigateBefore
+import androidx.compose.material.icons.automirrored.filled.NavigateNext
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
 import com.buhzzi.vwinngjuanime.LocalVwinngjuanIms
 import com.buhzzi.vwinngjuanime.R
 import com.buhzzi.vwinngjuanime.VwinngjuanIms
@@ -31,9 +47,9 @@ import com.buhzzi.vwinngjuanime.keyboards.latin.CtrlKey
 import com.buhzzi.vwinngjuanime.keyboards.latin.MetaKey
 import com.buhzzi.vwinngjuanime.keyboards.latin.SpaceKey
 import com.buhzzi.vwinngjuanime.keyboards.latin.TabKey
-import kotlin.concurrent.thread
-
-private val LocalTzhuComposer = compositionLocalOf<TzhuComposer?> { null }
+import com.buhzzi.vwinngjuanime.keyboards.latin.WithActionKey
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 internal class LejKeyAction(
 	val content: KeyContent,
@@ -50,7 +66,7 @@ private fun LejKey(
 	keyChar: Char,
 	modifier: Modifier = Modifier,
 ) {
-	val vwinStack = LocalTzhuComposer.current?.vwinStack
+	val vwinStack = savedTzhuComposer?.vwinStack
 	(keyMap?.get(keyChar) ?: "$keyChar".let { keyString ->
 		LejKeyAction(KeyContent(keyString)) {
 			vwinStack?.takeIf { it.notEmpty }?.apply {
@@ -70,7 +86,7 @@ private fun LejKey(
 
 @Composable
 internal fun BackspaceKey(modifier: Modifier = Modifier) {
-	val tzhuComposer = LocalTzhuComposer.current
+	val tzhuComposer = savedTzhuComposer
 	OutlinedKey(
 		KeyContent(Icons.AutoMirrored.Filled.Backspace),
 		modifier,
@@ -88,7 +104,7 @@ internal fun BackspaceKey(modifier: Modifier = Modifier) {
 internal fun EnterKey(
 	modifier: Modifier = Modifier,
 ) {
-	val vwinStack = LocalTzhuComposer.current?.vwinStack
+	val vwinStack = savedTzhuComposer?.vwinStack
 	OutlinedKey(
 		KeyContent(Icons.AutoMirrored.Filled.KeyboardReturn),
 		modifier,
@@ -104,50 +120,126 @@ internal fun EnterKey(
 }
 
 
-internal val vwinngjuanPlane = Plane({ stringResource(R.string.vwinngjuan_plane) }) {
-	var tzhuComposer by remember { mutableStateOf<TzhuComposer?>(null) }
+private var usingTzuihSelector by mutableStateOf(false)
 
-	var exceptionNullable by remember { mutableStateOf<Exception?>(null) }
-
-	val ims = LocalVwinngjuanIms.current
-	fun tryCreateTzhuComposer() {
-		thread {
-			try {
-				tzhuComposer = TzhuComposer(ims)
-				exceptionNullable = null
-			} catch (e: Exception) {
-				exceptionNullable = e
+@Composable
+private fun SelectTzuihComposable(tzhuComposer: TzhuComposer) {
+	CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+		val tzhuList = tzhuComposer.vwinStack.tzhuList
+		if (tzhuList.isEmpty()) {
+			OutlinedKey(KeyContent("無\n文", Icons.Filled.Close)) {
+				usingTzuihSelector = false
+			}
+			return@CompositionLocalProvider
+		}
+		Column {
+			var tzhuIndex by remember { mutableIntStateOf(0x0) }
+			Row(Modifier.weight(1F)) {
+				if (tzhuIndex <= 0x0) OutlinedSpace(Modifier.weight(1F)) { }
+				else OutlinedKey(KeyContent(Icons.AutoMirrored.Filled.NavigateBefore), Modifier.weight(1F)) {
+					--tzhuIndex
+				}
+				OutlinedKey(KeyContent(tzhuList[tzhuIndex].first.pathString), Modifier.weight(4F)) {
+					usingTzuihSelector = false
+				}
+				if (tzhuIndex >= tzhuList.lastIndex) OutlinedSpace(Modifier.weight(1F)) { }
+				else OutlinedKey(KeyContent(Icons.AutoMirrored.Filled.NavigateNext), Modifier.weight(1F)) {
+					++tzhuIndex
+				}
+			}
+			OutlinedSpace(Modifier.weight(4F)) {
+				LazyRow {
+					items(tzhuList[tzhuIndex].first.tzuihList.withIndex().toList()) { (tzuihIndex, tzuih) ->
+						Column(Modifier.width(0x40.dp)) {
+							OutlinedSpace(Modifier.weight(1F)) {
+								Box {
+									Text(tzuih.codePointAt(0x0).toString(0x10).uppercase(), Modifier
+										.align(Alignment.Center)
+										.padding(0x8.dp),
+									)
+								}
+							}
+							OutlinedKey(KeyContent(tzuih), Modifier
+								.weight(3F),
+							) {
+								tzhuList[tzhuIndex] = tzhuList[tzhuIndex].first to tzuihIndex
+								tzhuComposer.vwinStack.dumpTzuih()
+							}
+						}
+					}
+				}
 			}
 		}
 	}
+}
 
-	CompositionLocalProvider(LocalTzhuComposer provides tzhuComposer) {
-		println("tzhuComposer: $tzhuComposer")
-		if (tzhuComposer == null) {
-			exceptionNullable = Exception("No TzhuComposer provided.")
-			tryCreateTzhuComposer()
-		}
-		Column {
-			Row(Modifier.weight(1F)) {
-				TabKey(Modifier.weight(1F))
-				LejKey('`', Modifier.weight(1F))
-				LejKey('\'', Modifier.weight(1F))
-				LejKey('「', Modifier.weight(1F))
-				LejKey('」', Modifier.weight(1F))
-				LejKey('・', Modifier.weight(1F))
-				LejKey('-', Modifier.weight(1F))
-				LejKey('=', Modifier.weight(1F))
-				BackspaceKey(Modifier.weight(2F))
-			}
-			exceptionNullable?.also { exception ->
-				OutlinedSpace(
-					Modifier
-						.weight(4F)
-						.verticalScroll(rememberScrollState())
-				) {
-					Text(exception.stackTraceToString().also { println(it) })
+private var updatingTzhuComposerTrigger by mutableIntStateOf(0x0)
+
+internal val vwinngjuanPlane = Plane({ stringResource(R.string.vwinngjuan_plane) }, {
+	savedTzhuComposer?.vwinStack?.clear()
+}) {
+	val ims = LocalVwinngjuanIms.current
+
+	var creatingTzhuComposerException by remember { mutableStateOf<Exception?>(null) }
+
+	LaunchedEffect(ims, updatingTzhuComposerTrigger) {
+		println("Launched effect with $ims, $savedTzhuComposer")
+		if (savedTzhuComposer == null) {
+			creatingTzhuComposerException = try {
+				savedTzhuComposer = withContext(Dispatchers.IO) {
+					TzhuComposer(ims)
 				}
-			} ?: run {
+				null
+			} catch (e: Exception) {
+				e.printStackTrace()
+				e
+			}
+		}
+	}
+	val tzhuComposer = savedTzhuComposer
+
+	if (usingTzuihSelector) {
+		if (tzhuComposer != null) SelectTzuihComposable(tzhuComposer)
+		else usingTzuihSelector = false
+		return@Plane
+	}
+
+	Column {
+		Row(Modifier.weight(1F)) {
+			TabKey(Modifier.weight(1F))
+			LejKey('`', Modifier.weight(1F))
+			LejKey('\'', Modifier.weight(1F))
+			LejKey('「', Modifier.weight(1F))
+			LejKey('」', Modifier.weight(1F))
+			LejKey('・', Modifier.weight(1F))
+			LejKey('-', Modifier.weight(1F))
+			LejKey('=', Modifier.weight(1F))
+			BackspaceKey(Modifier.weight(2F))
+		}
+		val e = creatingTzhuComposerException
+		@Composable
+		fun ExceptionContent(text: String) {
+			OutlinedSpace(Modifier
+				.weight(4F)
+				.verticalScroll(rememberScrollState()),
+			) {
+				Text(text, textAlign = TextAlign.Center)
+			}
+		}
+		val tzhu = TzhuComposer.lastCreatedTzhu
+		when {
+			vwinngjuanResourceName != null -> ExceptionContent("""
+				下載$vwinngjuanResourceName
+				${Formatter.formatFileSize(ims, vwinngjuanResourceDownloaded)}
+			""".trimIndent())
+			tzhu != null -> ExceptionContent("""
+				建樹
+				${tzhu.first}
+				${tzhu.second.pathString}
+			""".trimIndent())
+			e != null -> ExceptionContent(e.stackTraceToString())
+			tzhuComposer == null -> ExceptionContent("組樹: ${null}.")
+			else -> {
 				Row(Modifier.weight(1F)) {
 					LejKey('1', Modifier.weight(1F))
 					LejKey('2', Modifier.weight(1F))
@@ -197,14 +289,21 @@ internal val vwinngjuanPlane = Plane({ stringResource(R.string.vwinngjuan_plane)
 					LejKey('。', Modifier.weight(1F))
 				}
 			}
-			Row(Modifier.weight(1F)) {
-				OutlinedKey(KeyContent(Icons.Filled.Refresh), Modifier.weight(2F)) {
-					tryCreateTzhuComposer()
-				}
-				MetaKey(Modifier.weight(1F))
-				SpaceKey(Modifier.weight(4F))
-				CtrlKey(Modifier.weight(1F))
-				EnterKey(Modifier.weight(2F))
+		}
+		Row(Modifier.weight(1F)) {
+			OutlinedKey(KeyContent(Icons.Filled.MoreVert), Modifier.weight(1F)) {
+				usingTzuihSelector = true
+			}
+			OutlinedKey(KeyContent(Icons.Filled.Refresh), Modifier.weight(1F)) {
+				++updatingTzhuComposerTrigger
+				savedTzhuComposer = null
+				println("Tzhu composer is now $tzhuComposer.")
+			}
+			MetaKey(Modifier.weight(1F))
+			SpaceKey(Modifier.weight(4F))
+			CtrlKey(Modifier.weight(1F))
+			WithActionKey(Modifier.weight(2F)) {
+				EnterKey(Modifier.weight(1F))
 			}
 		}
 	}
