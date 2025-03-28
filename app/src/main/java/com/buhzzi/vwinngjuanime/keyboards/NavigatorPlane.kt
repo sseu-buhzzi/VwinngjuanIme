@@ -1,12 +1,12 @@
 package com.buhzzi.vwinngjuanime.keyboards
 
+import android.view.KeyEvent
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ArrowBackIos
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.AppShortcut
@@ -31,7 +31,7 @@ import com.buhzzi.vwinngjuanime.keyboards.tzuih.vwinngjuanPlane
 internal fun VwinngjuanIms.planeGoBack() {
 	planeStack.apply {
 		if (size > 0x1) {
-			removeLastOrNull()!!.finish(this@planeGoBack)
+			removeLastOrNull()!!.onFinishInput(this@planeGoBack)
 		}
 	}
 }
@@ -54,16 +54,13 @@ internal fun VwinngjuanIms.commitText(text: CharSequence) {
 }
 
 internal fun VwinngjuanIms.backspaceText() {
-	currentInputConnection?.apply {
-		getSelectedText(0x0)?.also { commitText("", 0x0) }
-			?: deleteSurroundingText(0x1, 0x0)
-	}
+	sendDownUpKeyEvents(KeyEvent.KEYCODE_DEL)
 }
 
 @Composable
 internal fun PlaneGoBackKey(modifier: Modifier = Modifier) {
 	OutlinedKey(
-		KeyContent(stringResource(R.string.navigator_go_back), Icons.AutoMirrored.Filled.ArrowBackIos),
+		KeyContent(stringResource(R.string.navigator_go_back), Icons.AutoMirrored.Filled.ArrowBack),
 		modifier,
 	) {
 		planeGoBack()

@@ -19,10 +19,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Backspace
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.ContentCut
@@ -43,7 +43,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
-import com.buhzzi.vwinngjuanime.LocalVwinngjuanIms
 import com.buhzzi.vwinngjuanime.R
 import com.buhzzi.vwinngjuanime.VwinngjuanIms
 import com.buhzzi.vwinngjuanime.fromBytes
@@ -315,7 +314,7 @@ internal inline fun SelectedClipDataRow(
 		val optionModifier = Modifier
 			.width(CLIP_DATA_ROW_HEIGHT.dp)
 		OutlinedKey(
-			KeyContent(Icons.Filled.ArrowBackIosNew),
+			KeyContent(Icons.AutoMirrored.Filled.ArrowBack),
 			optionModifier,
 		) {
 			goBack()
@@ -344,7 +343,7 @@ internal val clipboardPlane = Plane({ stringResource(R.string.clipboard_plane) }
 			NavigatorPlaneNavigatorKey(Modifier.weight(1F))
 		}
 
-		val ims = LocalVwinngjuanIms.current
+		val ims = VwinngjuanIms.instanceMust
 		val clipboardManager = remember { ims.getSystemService(ClipboardManager::class.java) }
 		val clips = remember { ims.readClipPreferences().toMutableStateList() }
 		val clipHashes = remember { clips.asSequence().map { it?.hashParcelled() }.toMutableSet() }
