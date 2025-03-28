@@ -1,5 +1,7 @@
 package com.buhzzi.vwinngjuanime.keyboards.kana
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -7,7 +9,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBackIos
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.EmojiSymbols
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -17,6 +19,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.LayoutDirection
@@ -148,14 +151,17 @@ internal val kanaPlane: Plane = Plane({ stringResource(R.string.kana_plane) }) {
 					KanaVariation.HANDAKU,
 					KanaVariation.KOGAKI,
 				).forEach {
-					if (kanaVariation != it) {
-						ShiftKanaVariationKey(it, Modifier.weight(1F))
-					}
+					ShiftKanaVariationKey(it, Modifier.weight(1F)
+						.run {
+							if (kanaVariation == it) border(0x1.dp, Color.hsl(0F, 0F, 0.5F))
+							else this
+						},
+					)
 				}
 				CtrlKey(Modifier.weight(1F))
 				BackspaceKey(Modifier.weight(1F))
 			}
-			Row(Modifier.weight(4F)) {
+			Row(Modifier.weight(5F)) {
 				Column(Modifier.weight(1F)) {
 					KanaKey(
 						"あ", "あ゙", "あ゚", "ぁ",
@@ -439,7 +445,7 @@ internal val kanaSpecialsPlane = Plane({ stringResource(R.string.kana_specials_p
 			var selectedCategory by remember { mutableStateOf(categories.first().second) }
 			Row(Modifier.weight(1F)) {
 				OutlinedKey(
-					KeyContent(Icons.AutoMirrored.Filled.ArrowBackIos),
+					KeyContent(Icons.AutoMirrored.Filled.ArrowBack),
 					Modifier.weight(1F),
 				) {
 					planeGoBack()

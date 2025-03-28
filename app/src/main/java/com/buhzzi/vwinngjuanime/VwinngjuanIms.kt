@@ -2,14 +2,12 @@ package com.buhzzi.vwinngjuanime
 
 import android.content.Intent
 import android.inputmethodservice.InputMethodService
+import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import androidx.annotation.CallSuper
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -28,8 +26,8 @@ import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import com.buhzzi.vwinngjuanime.keyboards.latin.qwertyPlane
 import com.buhzzi.vwinngjuanime.keyboards.navigatorPlane
-import com.buhzzi.vwinngjuanime.keyboards.tzuih.vwinngjuanPlane
 
 internal abstract class ComposeInputMethodService : InputMethodService(), LifecycleOwner, ViewModelStoreOwner, SavedStateRegistryOwner {
 	private val lifecycleDispatcher = ServiceLifecycleDispatcher(this)
@@ -82,20 +80,31 @@ internal abstract class ComposeInputMethodService : InputMethodService(), Lifecy
 internal class VwinngjuanIms : ComposeInputMethodService() {
 	override fun onCreate() {
 		super.onCreate()
+
+		instance = this
+	}
+
+	override fun onDestroy() {
+		super.onDestroy()
+
+		instance = null
 	}
 
 	override fun onCreateInputComposeView() = ComposeView(this).apply {
 		setContent {
 			ThemeWrapComposable {
-				CompositionLocalProvider(LocalVwinngjuanIms provides this@VwinngjuanIms) {
-					Column(Modifier.height(0x140.dp)) {
-						Box(Modifier.safeDrawingPadding()) {
-							currentPlane.composableFunction()
-						}
-					}
+				Box(Modifier.height(0x180.dp)
+					.safeDrawingPadding(),
+				) {
+					currentPlane.composableFunction()
 				}
 			}
 		}
+
+		layoutParams = ViewGroup.LayoutParams(
+			ViewGroup.LayoutParams.MATCH_PARENT,
+			ViewGroup.LayoutParams.MATCH_PARENT,
+		)
 	}
 
 	override fun onStartInputView(attribute: EditorInfo?, restarting: Boolean) {
@@ -106,13 +115,21 @@ internal class VwinngjuanIms : ComposeInputMethodService() {
 		println("inputType: ${inputType.toString(0x10)}\timeOptions: ${imeOptions.toString(0x10)}")
 	}
 
-	override fun onUnbindInput() {
-		currentPlane.finish(this)
+	override fun onFinishInput() {
+		super.onFinishInput()
 
-		super.onUnbindInput()
+		println("onFinishInput")
+		currentPlane.onFinishInput(this)
 	}
 
-	var planeStack = mutableStateListOf(navigatorPlane, vwinngjuanPlane)
+	override fun onWindowHidden() {
+		super.onWindowHidden()
+
+		println("onWindowHidden")
+		currentPlane.onWindowHidden(this)
+	}
+
+	var planeStack = mutableStateListOf(navigatorPlane, qwertyPlane)
 
 	val currentPlane
 		get() = planeStack.last()
@@ -120,8 +137,12 @@ internal class VwinngjuanIms : ComposeInputMethodService() {
 	var inputType by mutableIntStateOf(EditorInfo.TYPE_NULL)
 
 	var imeOptions by mutableIntStateOf(EditorInfo.IME_NULL)
-}
 
-internal val LocalVwinngjuanIms = compositionLocalOf<VwinngjuanIms> {
-	error("No VwinngjuanIms.")
+	companion object {
+		var instance: VwinngjuanIms? = null
+			private set
+
+		val instanceMust
+			get() = instance ?: error("${VwinngjuanIms::class.qualifiedName} instance is not created.")
+	}
 }
