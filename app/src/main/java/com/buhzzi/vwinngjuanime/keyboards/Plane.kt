@@ -19,7 +19,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.util.fastAny
-import com.buhzzi.vwinngjuanime.LocalVwinngjuanIms
 import com.buhzzi.vwinngjuanime.VwinngjuanIms
 import kotlin.math.abs
 
@@ -28,7 +27,8 @@ const val REPEAT_INTERVAL = 0x20L
 
 internal class Plane(
 	val getName: @Composable () -> String,
-	val finish: VwinngjuanIms.() -> Unit = { },
+	val onFinishInput: VwinngjuanIms.() -> Unit = { },
+	val onWindowHidden: VwinngjuanIms.() -> Unit = { },
 	val composableFunction: @Composable () -> Unit,
 ) {
 	val name
@@ -94,7 +94,7 @@ internal inline fun OutlinedClickable(
 	movedThreshold: Float = 16F,
 	crossinline content: @Composable () -> Unit,
 ) {
-	val ims = LocalVwinngjuanIms.current
+	val ims = VwinngjuanIms.instanceMust
 	OutlinedSpace(modifier
 		.clickable { }
 		.pointerInput(keys = keysPointerInput) {

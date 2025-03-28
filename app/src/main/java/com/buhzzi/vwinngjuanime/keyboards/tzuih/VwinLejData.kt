@@ -106,13 +106,13 @@ internal val lejKeyMapPatternMap = mapOf(
 		.-------..
 	""".trimIndent(),
 	"止lej足脛" to """
-		---++++---
-		---++++--.
+		---+++----
+		---+++---.
 		.--+++--..
 	""".trimIndent(),
 	"又lej" to """
 		---+++----
-		---++++--.
+		---+++---.
 		.--+++--..
 	""".trimIndent(),
 	"目lej" to """

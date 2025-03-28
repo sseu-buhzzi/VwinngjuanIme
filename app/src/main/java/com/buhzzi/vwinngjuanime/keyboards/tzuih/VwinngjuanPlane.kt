@@ -1,6 +1,7 @@
 package com.buhzzi.vwinngjuanime.keyboards.tzuih
 
 import android.text.format.Formatter
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,13 +13,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Backspace
 import androidx.compose.material.icons.automirrored.filled.KeyboardReturn
 import androidx.compose.material.icons.automirrored.filled.NavigateBefore
 import androidx.compose.material.icons.automirrored.filled.NavigateNext
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -34,9 +36,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import com.buhzzi.vwinngjuanime.LocalVwinngjuanIms
 import com.buhzzi.vwinngjuanime.R
 import com.buhzzi.vwinngjuanime.VwinngjuanIms
+import com.buhzzi.vwinngjuanime.externalFilesDir
 import com.buhzzi.vwinngjuanime.keyboards.KeyContent
 import com.buhzzi.vwinngjuanime.keyboards.OutlinedKey
 import com.buhzzi.vwinngjuanime.keyboards.OutlinedSpace
@@ -50,6 +52,8 @@ import com.buhzzi.vwinngjuanime.keyboards.latin.TabKey
 import com.buhzzi.vwinngjuanime.keyboards.latin.WithActionKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlin.io.path.deleteIfExists
+import kotlin.io.path.div
 
 internal class LejKeyAction(
 	val content: KeyContent,
@@ -139,7 +143,10 @@ private fun SelectTzuihComposable(tzhuComposer: TzhuComposer) {
 				else OutlinedKey(KeyContent(Icons.AutoMirrored.Filled.NavigateBefore), Modifier.weight(1F)) {
 					--tzhuIndex
 				}
-				OutlinedKey(KeyContent(tzhuList[tzhuIndex].first.pathString), Modifier.weight(4F)) {
+				OutlinedKey(KeyContent(tzhuList[tzhuIndex].first.pathString), Modifier.weight(4F)
+					.horizontalScroll(rememberScrollState()),
+					movedThreshold = 0F,
+				) {
 					usingTzuihSelector = false
 				}
 				if (tzhuIndex >= tzhuList.lastIndex) OutlinedSpace(Modifier.weight(1F)) { }
@@ -155,13 +162,11 @@ private fun SelectTzuihComposable(tzhuComposer: TzhuComposer) {
 								Box {
 									Text(tzuih.codePointAt(0x0).toString(0x10).uppercase(), Modifier
 										.align(Alignment.Center)
-										.padding(0x8.dp),
+										.padding(0x4.dp),
 									)
 								}
 							}
-							OutlinedKey(KeyContent(tzuih), Modifier
-								.weight(3F),
-							) {
+							OutlinedKey(KeyContent(tzuih), Modifier.weight(2F)) {
 								tzhuList[tzhuIndex] = tzhuList[tzhuIndex].first to tzuihIndex
 								tzhuComposer.vwinStack.dumpTzuih()
 							}
@@ -173,26 +178,67 @@ private fun SelectTzuihComposable(tzhuComposer: TzhuComposer) {
 	}
 }
 
+private var usingOptions by mutableStateOf(false)
+
+private fun quitOptionsComposable() {
+	usingOptions = false
+}
+
+private fun deleteTzhuComposer() {
+	++updatingTzhuComposerTrigger
+	savedTzhuComposer = null
+}
+
+private fun deleteVwinngjuanFiles() {
+	VwinngjuanIms.instance?.externalFilesDir?.toPath()?.let { it / "vwinngjuan" }?.also { vwinngjuanDir ->
+		sequenceOf("lej.tsv", "tzhu.tsv").forEach {
+			(vwinngjuanDir / it).deleteIfExists()
+		}
+	}
+}
+
+@Composable
+private fun OptionsComposable() {
+	CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+		Column {
+			Row {
+				OutlinedKey(KeyContent(Icons.AutoMirrored.Filled.ArrowBack), Modifier.weight(1F)) {
+					quitOptionsComposable()
+				}
+				OutlinedKey(KeyContent("建\n樹"), Modifier.weight(1F)) {
+					deleteTzhuComposer()
+					quitOptionsComposable()
+				}
+				OutlinedKey(KeyContent("下\n載"), Modifier.weight(1F)) {
+					deleteVwinngjuanFiles()
+					deleteTzhuComposer()
+					quitOptionsComposable()
+				}
+			}
+		}
+	}
+}
+
 private var updatingTzhuComposerTrigger by mutableIntStateOf(0x0)
 
-internal val vwinngjuanPlane = Plane({ stringResource(R.string.vwinngjuan_plane) }, {
-	savedTzhuComposer?.vwinStack?.clear()
-}) {
-	val ims = LocalVwinngjuanIms.current
+internal val vwinngjuanPlane = Plane({ stringResource(R.string.vwinngjuan_plane) },
+	onFinishInput = { savedTzhuComposer?.vwinStack?.clear() },
+	onWindowHidden = { savedTzhuComposer?.vwinStack?.clear() },
+) {
+	val ims = VwinngjuanIms.instanceMust
 
 	var creatingTzhuComposerException by remember { mutableStateOf<Exception?>(null) }
 
 	LaunchedEffect(ims, updatingTzhuComposerTrigger) {
 		println("Launched effect with $ims, $savedTzhuComposer")
 		if (savedTzhuComposer == null) {
-			creatingTzhuComposerException = try {
-				savedTzhuComposer = withContext(Dispatchers.IO) {
-					TzhuComposer(ims)
+			withContext(Dispatchers.IO) {
+				try {
+					savedTzhuComposer = TzhuComposer()
+				} catch (e: Exception) {
+					e.printStackTrace()
+					creatingTzhuComposerException = e
 				}
-				null
-			} catch (e: Exception) {
-				e.printStackTrace()
-				e
 			}
 		}
 	}
@@ -201,6 +247,11 @@ internal val vwinngjuanPlane = Plane({ stringResource(R.string.vwinngjuan_plane)
 	if (usingTzuihSelector) {
 		if (tzhuComposer != null) SelectTzuihComposable(tzhuComposer)
 		else usingTzuihSelector = false
+		return@Plane
+	}
+
+	if (usingOptions) {
+		OptionsComposable()
 		return@Plane
 	}
 
@@ -294,10 +345,8 @@ internal val vwinngjuanPlane = Plane({ stringResource(R.string.vwinngjuan_plane)
 			OutlinedKey(KeyContent(Icons.Filled.MoreVert), Modifier.weight(1F)) {
 				usingTzuihSelector = true
 			}
-			OutlinedKey(KeyContent(Icons.Filled.Refresh), Modifier.weight(1F)) {
-				++updatingTzhuComposerTrigger
-				savedTzhuComposer = null
-				println("Tzhu composer is now $tzhuComposer.")
+			OutlinedKey(KeyContent(Icons.Filled.Settings), Modifier.weight(1F)) {
+				usingOptions = true
 			}
 			MetaKey(Modifier.weight(1F))
 			SpaceKey(Modifier.weight(4F))

@@ -1,5 +1,6 @@
 package com.buhzzi.vwinngjuanime
 
+import android.content.Context
 import android.os.Bundle
 import android.view.inputmethod.InputMethodManager
 import androidx.activity.ComponentActivity
@@ -22,6 +23,7 @@ import androidx.compose.material.lightColors
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,13 +32,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.delay
 
 internal class MainActivity : ComponentActivity() {
 	override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,6 +52,14 @@ internal class MainActivity : ComponentActivity() {
 		setContent {
 			MainComposable()
 		}
+	}
+
+	companion object {
+		var instance: MainActivity? = null
+			private set
+
+		val instanceMust
+			get() = instance ?: error("${MainActivity::class.qualifiedName} instance is not created.")
 	}
 }
 
@@ -154,9 +169,19 @@ internal fun SettingsComposable(navController: NavController) {
 			|</manifest>
 			|
 		""".trimMargin()) }
+		val focusRequester = FocusRequester()
+		val keyboardController = LocalSoftwareKeyboardController.current
+		LaunchedEffect(Unit) {
+			focusRequester.requestFocus()
+			keyboardController?.show()
+		}
 		OutlinedTextField(text, { text = it }, Modifier
-			.fillMaxWidth(),
+			.fillMaxWidth()
+			.focusRequester(focusRequester),
 			label = { Text("Test your input here...") },
 		)
 	}
 }
+
+val Context.externalFilesDir
+	get() = getExternalFilesDir(null) ?: error("Cannot access external files directory.")

@@ -10,6 +10,7 @@ import androidx.compose.ui.util.fastJoinToString
 import androidx.compose.ui.util.fastMap
 import androidx.compose.ui.util.fastMapIndexed
 import com.buhzzi.vwinngjuanime.VwinngjuanIms
+import com.buhzzi.vwinngjuanime.externalFilesDir
 import com.buhzzi.vwinngjuanime.keyboards.KeyContent
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
@@ -34,9 +35,7 @@ internal var vwinngjuanResourceDownloaded by mutableLongStateOf(0)
 
 private fun VwinngjuanIms.validateVwinngjuanResource(name: String) = run {
 	println("Validate $name")
-	val vwinngjuanFilesDir = run {
-		getExternalFilesDir("vwinngjuan") ?: error("Cannot open vwinngjuan files dir.")
-	}.toPath()
+	val vwinngjuanFilesDir = externalFilesDir.toPath() / "vwinngjuan"
 	val filePath = vwinngjuanFilesDir / name
 	if (
 		filePath.notExists() ||
@@ -124,7 +123,7 @@ internal class TzhuNode(
 
 	val tzuihList = mutableListOf<String>()
 
-	private val path
+	val path
 		get() = run {
 			var node: TzhuNode? = this
 			generateSequence {
@@ -137,7 +136,7 @@ internal class TzhuNode(
 		}
 
 	val pathString
-		get() = path.fastJoinToString(" ") { "${it.toString(0x10)}:${tzhuComposer.get()?.fullVwinList?.get(it)?.label}" }
+		get() = path.fastJoinToString(" ") { "${tzhuComposer.get()?.fullVwinList?.get(it)?.label}[${it.toString(0x10)}]" }
 
 	override fun toString() = """TzhuNode(${tzuihList.getOrNull(0x0)}, "$pathString")"""
 
@@ -155,7 +154,6 @@ internal class TzhuNode(
 
 
 internal class ComposingVwinStack(
-	private val ims: WeakReference<VwinngjuanIms>,
 	private val tzhuComposer: WeakReference<TzhuComposer>,
 ) {
 	private val vwinList = mutableListOf<VwinInfo>()
@@ -186,13 +184,6 @@ internal class ComposingVwinStack(
 	}
 
 	private fun collectNodes() {
-//			TODO 偵錯用。
-//			list.run {
-//				clear()
-//				"丄 干 口 𡿨".split(' ')
-//					.map { tzhuComposer.fullVwinList[tzhuComposer.vwinCodeMap[it]!!] }
-//					.let { addAll(it) }
-//			}
 		tzhuComposer.get()?.also { tzhuComposer ->
 			tzhuList.clear()
 			var nextAvailable = 0x0
@@ -207,8 +198,6 @@ internal class ComposingVwinStack(
 						nextAvailable = i + 0x1
 						availableNode = it
 					}
-//					TODO 偵錯用。
-// 					println("${nextAvailable - 1}\t$i\t${vwinList[i]}\t$node\t$this")
 				}
 				tzhuList.add(availableNode!! to 0x0)
 			}
@@ -224,8 +213,8 @@ internal class ComposingVwinStack(
 	}
 
 	fun dumpTzuih() {
-		ims.get()?.run {
-			currentInputConnection.setComposingText(buildTzuih(), 1)
+		VwinngjuanIms.instance?.run {
+			currentInputConnection?.setComposingText(buildTzuih(), 1)
 		}
 	}
 }
@@ -238,8 +227,8 @@ internal class ComposingVwinStack(
 
 
 
-internal class TzhuComposer(ims: VwinngjuanIms) {
-	private val lejList: List<LejInfo> = ims.validateVwinngjuanResource("lej.tsv").useTsv {
+internal class TzhuComposer {
+	private val lejList: List<LejInfo> = VwinngjuanIms.instanceMust.validateVwinngjuanResource("lej.tsv").useTsv {
 		map { (lej, vwinList) ->
 			val keyMapPattern = lejKeyMapPatternMap[lej] ?: error("Cannot find key map pattern for lej $lej.")
 			LejInfo(lej, keyMapPattern, vwinList.split(' ').fastMap { vwinLabel ->
@@ -281,7 +270,7 @@ internal class TzhuComposer(ims: VwinngjuanIms) {
 
 	val root = TzhuNode(WeakReference(this), null, 0x0)
 
-	val vwinStack = ComposingVwinStack(WeakReference(ims), WeakReference(this))
+	val vwinStack = ComposingVwinStack(WeakReference(this))
 
 	private fun generateKeyMapFromPattern(
 		keyActions: Iterable<LejKeyAction>,
@@ -311,24 +300,47 @@ internal class TzhuComposer(ims: VwinngjuanIms) {
 		node
 	}
 
+	class ResolveNodePathFrame(
+		val tzuih: String,
+		var index: Int,
+	)
+	private val resolveNodePathStack = arrayListOf<ResolveNodePathFrame>()
+
 	init {
-		val tzhuMap = ims.validateVwinngjuanResource("tzhu.tsv").useTsv {
+		val tzhuMap = VwinngjuanIms.instanceMust.validateVwinngjuanResource("tzhu.tsv").useTsv {
 			associate { (tzuih, tzhu) ->
 				tzuih to (tzhu.takeIf { it.isNotEmpty() }?.split(' ') ?: emptyList())
 			}
 		}
 		val nodeMap = mutableMapOf<String, List<Int>>()
-		fun resolveNodePath(tzuih: String): List<Int> = nodeMap.getOrPut(tzuih) {
-			(vwinCodeMap[tzuih]?.let { listOf(it) } ?: (tzhuMap[tzuih] ?: run {
-				error("Tzuih $tzuih not found.")
-			}).fastFlatMap { resolveNodePath(it) })
-				.also { tzhu ->
-					val node = createOnPath(tzhu)
-					node.tzuihList.add(tzuih)
-					lastCreatedTzhu = tzuih to node
+		fun resolveNodePath(tzuih: String) = nodeMap.getOrPut(tzuih) {
+			val path = mutableListOf<Int>()
+			resolveNodePathStack.clear()
+			resolveNodePathStack.add(ResolveNodePathFrame(tzuih, 0x0))
+			do {
+				val top = resolveNodePathStack[resolveNodePathStack.lastIndex]
+				vwinCodeMap[top.tzuih]?.let { code ->
+					path.add(code)
+					resolveNodePathStack.removeAt(resolveNodePathStack.lastIndex)
+				} ?: run {
+					val tzhu = tzhuMap.getOrElse(top.tzuih) {
+						error("Tzuih $tzuih not found.")
+					}
+					if (top.index < tzhu.size) {
+						resolveNodePathStack.add(ResolveNodePathFrame(tzhu[top.index++], 0x0))
+					} else {
+						resolveNodePathStack.removeAt(resolveNodePathStack.lastIndex)
+					}
 				}
+			} while (resolveNodePathStack.isNotEmpty())
+			val node = createOnPath(path)
+			lastCreatedTzhu = tzuih to node
+			node.tzuihList.add(tzuih)
+			path
 		}
-		tzhuMap.keys.forEach { tzuih -> resolveNodePath(tzuih) }
+		tzhuMap.keys.forEach { tzuih ->
+			resolveNodePath(tzuih)
+		}
 		lastCreatedTzhu = null
 	}
 

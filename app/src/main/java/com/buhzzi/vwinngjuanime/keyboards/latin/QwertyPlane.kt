@@ -17,8 +17,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import com.buhzzi.vwinngjuanime.LocalVwinngjuanIms
 import com.buhzzi.vwinngjuanime.R
+import com.buhzzi.vwinngjuanime.VwinngjuanIms
 import com.buhzzi.vwinngjuanime.keyboards.ActionDoneKey
 import com.buhzzi.vwinngjuanime.keyboards.ActionGoKey
 import com.buhzzi.vwinngjuanime.keyboards.ActionNextKey
@@ -140,7 +140,7 @@ internal fun WithActionKey(
 	content: @Composable () -> Unit
 ) {
 	Row(modifier) {
-		val ims = LocalVwinngjuanIms.current
+		val ims = VwinngjuanIms.instanceMust
 		when (ims.imeOptions and EditorInfo.IME_MASK_ACTION) {
 			EditorInfo.IME_ACTION_GO -> {
 				println("ime action go")
