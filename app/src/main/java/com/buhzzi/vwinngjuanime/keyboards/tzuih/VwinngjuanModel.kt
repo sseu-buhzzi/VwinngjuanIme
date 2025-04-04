@@ -13,7 +13,13 @@ import com.buhzzi.vwinngjuanime.externalFilesDir
 import com.buhzzi.vwinngjuanime.keyboards.KeyContent
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
 import java.io.File
+import java.io.IOException
 import java.io.RandomAccessFile
 import java.lang.ref.WeakReference
 import java.net.URL
@@ -77,24 +83,39 @@ private fun VwinngjuanIms.validateVwinngjuanResource(name: String) = run {
 	) {
 		println("Start downloading vwinngjuan resource $name.")
 		vwinngjuanResourceName = name
-		Channels.newChannel(URL("https://381-02007.buhzzi.com/permitted/vwinngjuan/$name").openStream()).use { `in` ->
-			FileChannel.open(
-				filePath,
-				StandardOpenOption.WRITE,
-				StandardOpenOption.TRUNCATE_EXISTING,
-				StandardOpenOption.CREATE,
-			).use { out ->
-				val buffer = ByteBuffer.allocate(DEFAULT_BUFFER_SIZE)
-				var transferred = 0x0L
-				vwinngjuanResourceDownloaded = 0x0
-				while (`in`.read(buffer).also { transferred += it } != -0x1) {
-					vwinngjuanResourceDownloaded = transferred
-					buffer.flip()
-					out.write(buffer)
-					buffer.clear()
-					Thread.sleep(0x4)
+		val client = OkHttpClient.Builder()
+			.addInterceptor { chain ->
+				val request = chain.request().newBuilder()
+					.addHeader("Accept-Encoding", "gzip")
+					.build()
+				chain.proceed(request)
+			}
+			.build()
+		val request = Request.Builder()
+			.url("https://381-02007.buhzzi.com/permitted/vwinngjuan/$name")
+			.build()
+		client.newCall(request).execute().use { response ->
+			Channels.newChannel(run {
+				response.body ?: error("Failed to download $name: no response body.")
+			}.byteStream()).use { `in` ->
+				FileChannel.open(
+					filePath,
+					StandardOpenOption.WRITE,
+					StandardOpenOption.TRUNCATE_EXISTING,
+					StandardOpenOption.CREATE,
+				).use { out ->
+					val buffer = ByteBuffer.allocate(DEFAULT_BUFFER_SIZE)
+					var transferred = 0x0L
+					vwinngjuanResourceDownloaded = 0x0
+					while (`in`.read(buffer).also { transferred += it } != -0x1) {
+						vwinngjuanResourceDownloaded = transferred
+						buffer.flip()
+						out.write(buffer)
+						buffer.clear()
+						Thread.sleep(0x4)
+					}
+					vwinngjuanResourceName = null
 				}
-				vwinngjuanResourceName = null
 			}
 		}
 	}
