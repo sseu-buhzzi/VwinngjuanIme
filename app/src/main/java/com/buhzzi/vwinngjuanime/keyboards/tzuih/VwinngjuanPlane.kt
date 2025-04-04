@@ -166,7 +166,9 @@ private fun SelectTzuihComposable(tzhuComposer: TzhuComposer) {
 									)
 								}
 							}
-							OutlinedKey(KeyContent(tzuih), Modifier.weight(2F)) {
+							OutlinedKey(KeyContent(tzuih), Modifier.weight(2F),
+								movedThreshold = 0F,
+							) {
 								tzhuList[tzhuIndex] = tzhuList[tzhuIndex].first to tzuihIndex
 								tzhuComposer.vwinStack.dumpTzuih()
 							}
@@ -191,7 +193,7 @@ private fun deleteTzhuComposer() {
 
 private fun deleteVwinngjuanFiles() {
 	VwinngjuanIms.instance?.externalFilesDir?.toPath()?.let { it / "vwinngjuan" }?.also { vwinngjuanDir ->
-		sequenceOf("lej.tsv", "tzhu.tsv").forEach {
+		sequenceOf("lej.tsv", "tzhu-tree.bin").forEach {
 			(vwinngjuanDir / it).deleteIfExists()
 		}
 	}
@@ -277,16 +279,10 @@ internal val vwinngjuanPlane = Plane({ stringResource(R.string.vwinngjuan_plane)
 				Text(text, textAlign = TextAlign.Center)
 			}
 		}
-		val tzhu = TzhuComposer.lastCreatedTzhu
 		when {
 			vwinngjuanResourceName != null -> ExceptionContent("""
 				下載$vwinngjuanResourceName
 				${Formatter.formatFileSize(ims, vwinngjuanResourceDownloaded)}
-			""".trimIndent())
-			tzhu != null -> ExceptionContent("""
-				建樹
-				${tzhu.first}
-				${tzhu.second.pathString}
 			""".trimIndent())
 			e != null -> ExceptionContent(e.stackTraceToString())
 			tzhuComposer == null -> ExceptionContent("組樹: ${null}.")

@@ -112,20 +112,19 @@ internal class VwinngjuanIms : ComposeInputMethodService() {
 
 		inputType = attribute?.inputType ?: EditorInfo.TYPE_NULL
 		imeOptions = attribute?.imeOptions ?: EditorInfo.IME_NULL
+		// TODO Debug.
 		println("inputType: ${inputType.toString(0x10)}\timeOptions: ${imeOptions.toString(0x10)}")
 	}
 
 	override fun onFinishInput() {
 		super.onFinishInput()
 
-		println("onFinishInput")
 		currentPlane.onFinishInput(this)
 	}
 
 	override fun onWindowHidden() {
 		super.onWindowHidden()
 
-		println("onWindowHidden")
 		currentPlane.onWindowHidden(this)
 	}
 
