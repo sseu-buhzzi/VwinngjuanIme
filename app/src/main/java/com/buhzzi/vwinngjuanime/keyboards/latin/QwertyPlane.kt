@@ -1,6 +1,7 @@
 package com.buhzzi.vwinngjuanime.keyboards.latin
 
 import android.view.inputmethod.EditorInfo
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
@@ -16,7 +17,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.buhzzi.vwinngjuanime.R
 import com.buhzzi.vwinngjuanime.VwinngjuanIms
 import com.buhzzi.vwinngjuanime.keyboards.ActionDoneKey
@@ -39,7 +42,8 @@ private enum class LatinKeySet {
 	UPPERCASE,
 }
 
-private var latinKeySet by mutableStateOf(LatinKeySet.LOWERCASE)
+private var keySet by mutableStateOf(LatinKeySet.LOWERCASE)
+private var nextKeySet by mutableStateOf(LatinKeySet.LOWERCASE)
 
 @Composable
 private fun CaseLatterKey(
@@ -47,17 +51,17 @@ private fun CaseLatterKey(
 	upperDesc: String,
 	modifier: Modifier = Modifier,
 ) {
-	val desc = when (latinKeySet) {
+	val desc = when (keySet) {
 		LatinKeySet.LOWERCASE -> lowerDesc
 		LatinKeySet.UPPERCASE -> upperDesc
 	}
 	OutlinedKey(
 		KeyContent(desc),
 		modifier,
-		arrayOf(latinKeySet),
+		arrayOf(keySet),
 	) {
 		commitText(desc)
-		latinKeySet = LatinKeySet.LOWERCASE
+		keySet = nextKeySet
 	}
 }
 
@@ -85,11 +89,20 @@ internal fun BackspaceKey(modifier: Modifier = Modifier) {
 private fun ShiftKey(modifier: Modifier = Modifier) {
 	OutlinedKey(
 		KeyContent(Icons.Filled.KeyboardCapslock),
-		modifier,
+		modifier.run {
+			if (nextKeySet == LatinKeySet.UPPERCASE) border(0x1.dp, Color.hsl(0F, 0F, 0.5F))
+			else this
+		},
 	) {
-		latinKeySet = when (latinKeySet) {
-			LatinKeySet.LOWERCASE -> LatinKeySet.UPPERCASE
-			LatinKeySet.UPPERCASE -> LatinKeySet.LOWERCASE
+		when (keySet) {
+			LatinKeySet.LOWERCASE -> keySet = LatinKeySet.UPPERCASE
+			LatinKeySet.UPPERCASE -> when (nextKeySet) {
+				LatinKeySet.LOWERCASE -> nextKeySet = LatinKeySet.UPPERCASE
+				LatinKeySet.UPPERCASE -> {
+					keySet = LatinKeySet.LOWERCASE
+					nextKeySet = LatinKeySet.LOWERCASE
+				}
+			}
 		}
 	}
 }
