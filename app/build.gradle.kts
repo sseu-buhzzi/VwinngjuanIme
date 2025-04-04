@@ -61,6 +61,8 @@ dependencies {
 	implementation(libs.androidx.lifecycle.viewmodel.ktx)
 	implementation(libs.androidx.savedstate)
 
+	implementation(libs.okhttp3.okhttp)
+
 	testImplementation(libs.junit)
 	androidTestImplementation(libs.androidx.junit)
 	androidTestImplementation(libs.androidx.espresso.core)
