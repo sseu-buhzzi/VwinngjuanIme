@@ -13,15 +13,12 @@ import com.buhzzi.vwinngjuanime.externalFilesDir
 import com.buhzzi.vwinngjuanime.keyboards.KeyContent
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
-import okhttp3.Call
-import okhttp3.Callback
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.Response
 import java.io.File
-import java.io.IOException
 import java.io.RandomAccessFile
 import java.lang.ref.WeakReference
+import java.net.SocketTimeoutException
 import java.net.URL
 import java.nio.ByteBuffer
 import java.nio.channels.Channels
@@ -29,7 +26,9 @@ import java.nio.channels.FileChannel
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import java.security.MessageDigest
+import java.util.concurrent.TimeUnit
 import kotlin.io.path.div
+import kotlin.io.path.exists
 import kotlin.io.path.notExists
 import kotlin.io.path.readBytes
 import kotlin.io.path.useLines
@@ -43,6 +42,7 @@ internal var vwinngjuanResourceDownloaded by mutableLongStateOf(0)
 private fun VwinngjuanIms.validateVwinngjuanResource(name: String) = run {
 	println("Validate $name")
 	val vwinngjuanFilesDir = externalFilesDir.toPath() / "vwinngjuan"
+	val vwinngjuanResourceURL = "https://381-03011-webe.buhzzi.com/permitted/vwinngjuan/$name"
 	val filePath = vwinngjuanFilesDir / name
 	if (
 		filePath.notExists() ||
@@ -53,20 +53,20 @@ private fun VwinngjuanIms.validateVwinngjuanResource(name: String) = run {
 				withTimeoutOrNull(0x1000) {
 					runCatching {
 
-						URL("https://381-02007.buhzzi.com/permitted/vwinngjuan/$name.sha256").readBytes().also {
+						URL("$vwinngjuanResourceURL.sha256").readBytes().also {
 							println("Fetched hash.")
 							hashPath.writeBytes(it)
 						}
 
 					}.getOrNull()
-				} ?: hashPath.readBytes().also {
+				} ?: hashPath.takeIf { it.exists() }?.readBytes()?.also {
 					println("Use old hash.")
 				}
 			}
 			fun ByteArray.toBigIntString() = joinToString("") {
 				it.toUByte().toString(0x10).padStart(0x2, '0')
 			}
-			println("Given SHA-256 sum: ${hash.toBigIntString()}")
+			println("Given SHA-256 sum: ${hash?.toBigIntString()}")
 			val digest = MessageDigest.getInstance("SHA-256")
 			val buffer = ByteBuffer.allocate(DEFAULT_BUFFER_SIZE)
 			FileChannel.open(filePath).use { `in` ->
@@ -90,34 +90,41 @@ private fun VwinngjuanIms.validateVwinngjuanResource(name: String) = run {
 					.build()
 				chain.proceed(request)
 			}
+			.connectTimeout(0x1000, TimeUnit.MILLISECONDS)
 			.build()
 		val request = Request.Builder()
-			.url("https://381-02007.buhzzi.com/permitted/vwinngjuan/$name")
+			.url(vwinngjuanResourceURL)
 			.build()
-		client.newCall(request).execute().use { response ->
-			Channels.newChannel(run {
-				response.body ?: error("Failed to download $name: no response body.")
-			}.byteStream()).use { `in` ->
-				FileChannel.open(
-					filePath,
-					StandardOpenOption.WRITE,
-					StandardOpenOption.TRUNCATE_EXISTING,
-					StandardOpenOption.CREATE,
-				).use { out ->
-					val buffer = ByteBuffer.allocate(DEFAULT_BUFFER_SIZE)
-					var transferred = 0x0L
-					vwinngjuanResourceDownloaded = 0x0
-					while (`in`.read(buffer).also { transferred += it } != -0x1) {
-						vwinngjuanResourceDownloaded = transferred
-						buffer.flip()
-						out.write(buffer)
-						buffer.clear()
-						Thread.sleep(0x4)
+		do {
+			try {
+				client.newCall(request).execute().use { response ->
+					Channels.newChannel(run {
+						response.body ?: error("Failed to download $name: no response body.")
+					}.byteStream()).use { `in` ->
+						FileChannel.open(
+							filePath,
+							StandardOpenOption.WRITE,
+							StandardOpenOption.TRUNCATE_EXISTING,
+							StandardOpenOption.CREATE,
+						).use { out ->
+							val buffer = ByteBuffer.allocate(DEFAULT_BUFFER_SIZE)
+							var transferred = 0x0L
+							vwinngjuanResourceDownloaded = 0x0
+							while (`in`.read(buffer).also { transferred += it } != -0x1) {
+								vwinngjuanResourceDownloaded = transferred
+								buffer.flip()
+								out.write(buffer)
+								buffer.clear()
+								Thread.sleep(0x4)
+							}
+							vwinngjuanResourceName = null
+						}
 					}
-					vwinngjuanResourceName = null
 				}
+			} catch (e: SocketTimeoutException) {
+				println("Timeout: ${e.message}")
 			}
-		}
+		} while (vwinngjuanResourceName != null)
 	}
 	filePath
 }
