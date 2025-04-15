@@ -26,8 +26,10 @@ import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import com.buhzzi.vwinngjuanime.keyboards.editor.clipboardPlane
 import com.buhzzi.vwinngjuanime.keyboards.latin.qwertyPlane
 import com.buhzzi.vwinngjuanime.keyboards.navigatorPlane
+import com.buhzzi.vwinngjuanime.keyboards.tzuih.vwinngjuanPlane
 
 internal abstract class ComposeInputMethodService : InputMethodService(), LifecycleOwner, ViewModelStoreOwner, SavedStateRegistryOwner {
 	private val lifecycleDispatcher = ServiceLifecycleDispatcher(this)
@@ -128,7 +130,7 @@ internal class VwinngjuanIms : ComposeInputMethodService() {
 		currentPlane.onWindowHidden(this)
 	}
 
-	var planeStack = mutableStateListOf(navigatorPlane, qwertyPlane)
+	var planeStack = mutableStateListOf(navigatorPlane, clipboardPlane, qwertyPlane, vwinngjuanPlane)
 
 	val currentPlane
 		get() = planeStack.last()

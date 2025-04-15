@@ -42,6 +42,9 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import kotlin.io.path.div
+import kotlin.io.path.readText
+import kotlin.io.path.writeText
 
 internal class MainActivity : ComponentActivity() {
 	override fun onCreate(savedInstanceState: Bundle?) {
@@ -127,53 +130,20 @@ internal fun SettingsComposable(navController: NavController) {
 		}, Modifier.fillMaxWidth()) {
 			Text("Settings")
 		}
-		var text by remember { mutableStateOf("""
-			|<?xml version="1.0" encoding="utf-8"?>
-			|<manifest xmlns:android="http://schemas.android.com/apk/res/android">
-			|
-			|	<uses-permission android:name="android.permission.VIBRATE" />
-			|	<application
-			|		android:allowBackup="true"
-			|		android:dataExtractionRules="@xml/data_extraction_rules"
-			|		android:fullBackupContent="@xml/backup_rules"
-			|		android:icon="@mipmap/ic_launcher"
-			|		android:label="@string/app_name"
-			|		android:roundIcon="@mipmap/ic_launcher_round"
-			|		android:supportsRtl="true"
-			|		android:theme="@style/Theme.VwinngjuanIme"
-			|	>
-			|		<activity android:name="com.buhzzi.vwinngjuanime.MainActivity"
-			|			android:exported="true"
-			|		>
-			|			<intent-filter>
-			|				<action android:name="android.intent.action.MAIN" />
-			|				<category android:name="android.intent.category.LAUNCHER" />
-			|			</intent-filter>
-			|		</activity>
-			|		<service android:name="com.buhzzi.vwinngjuanime.VwinngjuanIms"
-			|			android:label="@string/app_name"
-			|			android:permission="android.permission.BIND_INPUT_METHOD"
-			|			android:exported="true"
-			|		>
-			|			<meta-data android:name="android.view.im"
-			|				android:resource="@xml/vwinngjuan_ime"
-			|			/>
-			|			<intent-filter>
-			|				<action android:name="android.view.InputMethod" />
-			|			</intent-filter>
-			|		</service>
-			|	</application>
-			|
-			|</manifest>
-			|
-		""".trimMargin()) }
+		val debugTextPath = remember { context.externalFilesDir.toPath() / "debug.txt" }
+		var debugText by remember { mutableStateOf(runCatching {
+			debugTextPath.readText()
+		}.getOrElse { "" }) }
 		val focusRequester = FocusRequester()
 		val keyboardController = LocalSoftwareKeyboardController.current
 		LaunchedEffect(Unit) {
 			focusRequester.requestFocus()
 			keyboardController?.show()
 		}
-		OutlinedTextField(text, { text = it }, Modifier
+		OutlinedTextField(debugText, {
+			debugTextPath.writeText(it)
+			debugText = it
+		}, Modifier
 			.fillMaxWidth()
 			.focusRequester(focusRequester),
 			label = { Text("Test your input here...") },

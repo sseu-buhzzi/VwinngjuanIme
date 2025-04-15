@@ -54,6 +54,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.div
+import kotlin.system.exitProcess
 
 internal class LejKeyAction(
 	val content: KeyContent,
@@ -187,8 +188,8 @@ private fun quitOptionsComposable() {
 }
 
 private fun deleteTzhuComposer() {
-	++updatingTzhuComposerTrigger
 	savedTzhuComposer = null
+	++updatingTzhuComposerTrigger
 }
 
 private fun deleteVwinngjuanFiles() {
@@ -216,6 +217,9 @@ private fun OptionsComposable() {
 					deleteTzhuComposer()
 					quitOptionsComposable()
 				}
+				OutlinedKey(KeyContent("終\n止"), Modifier.weight(1F)) {
+					exitProcess(0x0)
+				}
 			}
 		}
 	}
@@ -236,6 +240,7 @@ internal val vwinngjuanPlane = Plane({ stringResource(R.string.vwinngjuan_plane)
 		if (savedTzhuComposer == null) {
 			withContext(Dispatchers.IO) {
 				try {
+					creatingTzhuComposerException = null
 					savedTzhuComposer = TzhuComposer()
 				} catch (e: Exception) {
 					e.printStackTrace()
@@ -280,11 +285,11 @@ internal val vwinngjuanPlane = Plane({ stringResource(R.string.vwinngjuan_plane)
 			}
 		}
 		when {
+			e != null -> ExceptionContent(e.stackTraceToString())
 			vwinngjuanResourceName != null -> ExceptionContent("""
 				下載$vwinngjuanResourceName
 				${Formatter.formatFileSize(ims, vwinngjuanResourceDownloaded)}
 			""".trimIndent())
-			e != null -> ExceptionContent(e.stackTraceToString())
 			tzhuComposer == null -> ExceptionContent("組樹: ${null}.")
 			else -> {
 				Row(Modifier.weight(1F)) {

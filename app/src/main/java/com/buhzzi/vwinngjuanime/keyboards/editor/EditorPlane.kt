@@ -6,7 +6,7 @@ import android.content.Context
 import android.util.Base64
 import android.view.inputmethod.ExtractedTextRequest
 import android.view.inputmethod.InputConnection
-import androidx.annotation.IntRange
+import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,13 +32,19 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardDoubleArrowLeft
 import androidx.compose.material.icons.filled.KeyboardDoubleArrowRight
 import androidx.compose.material.icons.filled.SelectAll
+import androidx.compose.material.icons.filled.SwitchLeft
+import androidx.compose.material.icons.filled.SwitchRight
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -61,6 +67,12 @@ import com.buhzzi.vwinngjuanime.keyboards.planeGoBack
 import com.buhzzi.vwinngjuanime.toBytes
 import java.math.BigInteger
 
+private enum class Carets {
+	BOTH, LEFT, RIGHT;
+}
+
+private var carets by mutableStateOf(Carets.BOTH)
+
 private inline fun InputConnection.doWithCarets(block: InputConnection.(Int, Int) -> Unit) {
 	getTextBeforeCursor(Int.MAX_VALUE, 0x0)?.length?.also { leftLength ->
 		val midLength = getSelectedText(0x0)?.length ?: 0x0
@@ -68,22 +80,50 @@ private inline fun InputConnection.doWithCarets(block: InputConnection.(Int, Int
 	}
 }
 
-private fun InputConnection.applyCarets(@IntRange(-0x1, 0x1) carets: Int, block: (Pair<Int, Int>) -> Pair<Int, Int>) {
+private fun InputConnection.applyCarets(carets: Carets, block: (Pair<Int, Int>) -> Pair<Int, Int>) {
 	doWithCarets { left, right ->
 		val (newLeft, newRight) = block(left to right)
 		when (carets) {
-			-0x1 -> setSelection(newLeft, right)
-			0x0 -> setSelection(newLeft, newRight)
-			0x1 -> setSelection(left, newRight)
-			else -> error("Invalid carets value: $carets.")
+			Carets.BOTH -> setSelection(newLeft, newRight)
+			Carets.LEFT -> setSelection(newLeft, right)
+			Carets.RIGHT -> setSelection(left, newRight)
 		}
+	}
+}
+
+@Composable
+private fun ToggleLeftKey(modifier: Modifier = Modifier) {
+	if (carets == Carets.LEFT) OutlinedKey(
+		KeyContent(Icons.Filled.SwitchRight),
+		modifier.border(0x1.dp, Color.hsl(0F, 0F, 0.5F)),
+	) {
+		carets = Carets.BOTH
+	} else OutlinedKey(
+		KeyContent(Icons.Filled.SwitchRight),
+		modifier,
+	) {
+		carets = Carets.LEFT
+	}
+}
+
+@Composable
+private fun ToggleRightKey(modifier: Modifier = Modifier) {
+	if (carets == Carets.RIGHT) OutlinedKey(
+		KeyContent(Icons.Filled.SwitchLeft),
+		modifier.border(0x1.dp, Color.hsl(0F, 0F, 0.5F)),
+	) {
+		carets = Carets.BOTH
+	} else OutlinedKey(
+		KeyContent(Icons.Filled.SwitchLeft),
+		modifier,
+	) {
+		carets = Carets.RIGHT
 	}
 }
 
 @Composable
 private fun LeftKey(
 	modifier: Modifier = Modifier,
-	@IntRange(-0x1, 0x1) carets: Int = 0x0,
 ) {
 	OutlinedKey(
 		KeyContent(Icons.AutoMirrored.Filled.KeyboardArrowLeft),
@@ -96,7 +136,6 @@ private fun LeftKey(
 @Composable
 private fun RightKey(
 	modifier: Modifier = Modifier,
-	@IntRange(-0x1, 0x1) carets: Int = 0x0,
 ) {
 	OutlinedKey(
 		KeyContent(Icons.AutoMirrored.Filled.KeyboardArrowRight),
@@ -111,7 +150,6 @@ private fun RightKey(
 @Composable
 private fun LeftMostKey(
 	modifier: Modifier = Modifier,
-	@IntRange(-0x1, 0x1) carets: Int = 0x0,
 ) {
 	OutlinedKey(
 		KeyContent(Icons.Filled.KeyboardDoubleArrowLeft),
@@ -124,7 +162,6 @@ private fun LeftMostKey(
 @Composable
 private fun RightMostKey(
 	modifier: Modifier = Modifier,
-	@IntRange(-0x1, 0x1) carets: Int = 0x0,
 ) {
 	OutlinedKey(
 		KeyContent(Icons.Filled.KeyboardDoubleArrowRight),
@@ -209,29 +246,15 @@ internal val editorPlane: Plane = Plane({ stringResource(R.string.editor_plane) 
 			NavigatorPlaneNavigatorKey(Modifier.weight(1F))
 		}
 		Row(Modifier.weight(2F)) {
-			Column(Modifier.weight(2F)) {
-				LeftKey(Modifier.weight(2F))
+			Column(Modifier.weight(1F)) {
 				LeftMostKey(Modifier.weight(1F))
+				LeftKey(Modifier.weight(1F))
 			}
+			ToggleLeftKey(Modifier.weight(0.5F))
+			ToggleRightKey(Modifier.weight(0.5F))
 			Column(Modifier.weight(1F)) {
-				LeftKey(Modifier.weight(1F), -0x1)
-				LeftMostKey(Modifier.weight(1F), -0x1)
-			}
-			Column(Modifier.weight(1F)) {
-				RightKey(Modifier.weight(1F), -0x1)
-				RightMostKey(Modifier.weight(1F), -0x1)
-			}
-			Column(Modifier.weight(1F)) {
-				LeftKey(Modifier.weight(1F), 0x1)
-				LeftMostKey(Modifier.weight(1F), 0x1)
-			}
-			Column(Modifier.weight(1F)) {
-				RightKey(Modifier.weight(1F), 0x1)
-				RightMostKey(Modifier.weight(1F), 0x1)
-			}
-			Column(Modifier.weight(2F)) {
-				RightKey(Modifier.weight(2F))
 				RightMostKey(Modifier.weight(1F))
+				RightKey(Modifier.weight(1F))
 			}
 		}
 		Row(Modifier.weight(1F)) {

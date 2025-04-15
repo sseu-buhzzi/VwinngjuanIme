@@ -29,7 +29,6 @@ import java.security.MessageDigest
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.div
 import kotlin.io.path.exists
-import kotlin.io.path.notExists
 import kotlin.io.path.readBytes
 import kotlin.io.path.useLines
 import kotlin.io.path.writeBytes
@@ -42,10 +41,10 @@ internal var vwinngjuanResourceDownloaded by mutableLongStateOf(0)
 private fun VwinngjuanIms.validateVwinngjuanResource(name: String) = run {
 	println("Validate $name")
 	val vwinngjuanFilesDir = externalFilesDir.toPath() / "vwinngjuan"
-	val vwinngjuanResourceURL = "https://381-03011-webe.buhzzi.com/permitted/vwinngjuan/$name"
+	val vwinngjuanResourceURL = "https://381-03011-http.buhzzi.com/permitted/vwinngjuan/$name"
 	val filePath = vwinngjuanFilesDir / name
 	if (
-		filePath.notExists() ||
+		filePath.exists() &&
 		run {
 			val hashPath = vwinngjuanFilesDir / "$name.sha256"
 			println("File $name exists. Checking SHA-256 sum.")
@@ -76,55 +75,62 @@ private fun VwinngjuanIms.validateVwinngjuanResource(name: String) = run {
 					buffer.clear()
 				}
 			}
-			!digest.digest().also { calcHash ->
+			digest.digest().also { calcHash ->
 				println("Digest: ${calcHash.toBigIntString()}")
 			}.contentEquals(hash)
 		}
 	) {
+		println("Digest matched. No need to download again.")
+	} else {
 		println("Start downloading vwinngjuan resource $name.")
-		vwinngjuanResourceName = name
-		val client = OkHttpClient.Builder()
-			.addInterceptor { chain ->
-				val request = chain.request().newBuilder()
-					.addHeader("Accept-Encoding", "gzip")
-					.build()
-				chain.proceed(request)
-			}
-			.connectTimeout(0x1000, TimeUnit.MILLISECONDS)
-			.build()
-		val request = Request.Builder()
-			.url(vwinngjuanResourceURL)
-			.build()
-		do {
-			try {
-				client.newCall(request).execute().use { response ->
-					Channels.newChannel(run {
-						response.body ?: error("Failed to download $name: no response body.")
-					}.byteStream()).use { `in` ->
-						FileChannel.open(
-							filePath,
-							StandardOpenOption.WRITE,
-							StandardOpenOption.TRUNCATE_EXISTING,
-							StandardOpenOption.CREATE,
-						).use { out ->
-							val buffer = ByteBuffer.allocate(DEFAULT_BUFFER_SIZE)
-							var transferred = 0x0L
-							vwinngjuanResourceDownloaded = 0x0
-							while (`in`.read(buffer).also { transferred += it } != -0x1) {
-								vwinngjuanResourceDownloaded = transferred
-								buffer.flip()
-								out.write(buffer)
-								buffer.clear()
-								Thread.sleep(0x4)
+		try {
+			vwinngjuanResourceName = name
+			val client = OkHttpClient.Builder()
+				.addInterceptor { chain ->
+					val request = chain.request().newBuilder()
+						.addHeader("Accept-Encoding", "gzip")
+						.build()
+					chain.proceed(request)
+				}
+				.connectTimeout(0x1000, TimeUnit.MILLISECONDS)
+				.build()
+			val request = Request.Builder()
+				.url(vwinngjuanResourceURL)
+				.build()
+			do {
+				try {
+					client.newCall(request).execute().use { response ->
+						response.run {
+							isSuccessful || error("Failed to download $name: $code\n$body")
+							body ?: error("Failed to download $name: no response body.")
+						}.byteStream().let { Channels.newChannel(it) }.use { `in` ->
+							FileChannel.open(
+								filePath,
+								StandardOpenOption.WRITE,
+								StandardOpenOption.TRUNCATE_EXISTING,
+								StandardOpenOption.CREATE,
+							).use { out ->
+								val buffer = ByteBuffer.allocate(DEFAULT_BUFFER_SIZE)
+								var transferred = 0x0L
+								vwinngjuanResourceDownloaded = 0x0
+								while (`in`.read(buffer).also { transferred += it } != -0x1) {
+									vwinngjuanResourceDownloaded = transferred
+									buffer.flip()
+									out.write(buffer)
+									buffer.clear()
+									Thread.sleep(0x4)
+								}
+								vwinngjuanResourceName = null
 							}
-							vwinngjuanResourceName = null
 						}
 					}
+				} catch (e: SocketTimeoutException) {
+					println("Timeout: ${e.message}")
 				}
-			} catch (e: SocketTimeoutException) {
-				println("Timeout: ${e.message}")
-			}
-		} while (vwinngjuanResourceName != null)
+			} while (vwinngjuanResourceName != null)
+		} finally {
+			vwinngjuanResourceName = null
+		}
 	}
 	filePath
 }
