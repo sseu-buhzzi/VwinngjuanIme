@@ -25,6 +25,7 @@ import com.buhzzi.vwinngjuanime.VwinngjuanIms
 import com.buhzzi.vwinngjuanime.keyboards.editor.clipboardPlane
 import com.buhzzi.vwinngjuanime.keyboards.editor.editorPlane
 import com.buhzzi.vwinngjuanime.keyboards.kana.kanaPlane
+import com.buhzzi.vwinngjuanime.keyboards.latin.qwertyFullwidthPlane
 import com.buhzzi.vwinngjuanime.keyboards.latin.qwertyPlane
 import com.buhzzi.vwinngjuanime.keyboards.tzuih.vwinngjuanPlane
 
@@ -151,46 +152,38 @@ internal fun NavigatorKey(
 	}
 }
 
-@Composable
-internal fun NavigatorPlaneNavigatorKey(modifier: Modifier = Modifier) {
-	NavigatorKey(navigatorPlane, Icons.Filled.Navigation, modifier)
-}
+internal val navigatorPlaneIcon
+	get() = Icons.Filled.Navigation
 
-@Composable
-internal fun EditorPlaneNavigatorKey(modifier: Modifier = Modifier) {
-	NavigatorKey(editorPlane, Icons.Filled.ControlCamera, modifier)
-}
+internal val editorPlaneIcon
+	get() = Icons.Filled.ControlCamera
 
-@Composable
-internal fun ClipboardPlaneNavigatorKey(modifier: Modifier = Modifier) {
-	NavigatorKey(clipboardPlane, Icons.Filled.ContentPaste, modifier)
-}
+internal val clipboardPlaneIcon
+	get() = Icons.Filled.ContentPaste
 
-@Composable
-internal fun QwertyPlaneNavigatorKey(modifier: Modifier = Modifier) {
-	NavigatorKey(qwertyPlane, Icons.Filled.Keyboard, modifier)
-}
+internal val qwertyPlaneIcon
+	get() = Icons.Filled.Keyboard
 
-@Composable
-internal fun VwinngjuanPlaneNavigatorKey(modifier: Modifier = Modifier) {
-	NavigatorKey(vwinngjuanPlane, Icons.Filled.Keyboard, modifier)
-}
+internal val qwertyFullwidthPlaneIcon
+	get() = Icons.Filled.Keyboard
 
-@Composable
-internal fun KanaPlaneNavigatorKey(modifier: Modifier = Modifier) {
-	NavigatorKey(kanaPlane, Icons.Filled.Keyboard, modifier)
-}
+internal val vwinngjuanPlaneIcon
+	get() = Icons.Filled.Keyboard
 
-internal val navigatorPlane = Plane({ stringResource(R.string.navigator_plane) }) {
+internal val kanaPlaneIcon
+	get() = Icons.Filled.Keyboard
+
+internal val navigatorPlane: Plane = Plane({ stringResource(R.string.navigator_plane) }) {
 	Column(Modifier) {
 		Row(Modifier.weight(1F)) {
-			QwertyPlaneNavigatorKey(Modifier.weight(1F))
-			VwinngjuanPlaneNavigatorKey(Modifier.weight(1F))
-			KanaPlaneNavigatorKey(Modifier.weight(1F))
+			NavigatorKey(qwertyPlane, qwertyPlaneIcon, Modifier.weight(1F))
+			NavigatorKey(qwertyFullwidthPlane, qwertyFullwidthPlaneIcon, Modifier.weight(1F))
+			NavigatorKey(vwinngjuanPlane, vwinngjuanPlaneIcon, Modifier.weight(1F))
+			NavigatorKey(kanaPlane, kanaPlaneIcon, Modifier.weight(1F))
 		}
 		Row(Modifier.weight(1F)) {
-			EditorPlaneNavigatorKey(Modifier.weight(1F))
-			ClipboardPlaneNavigatorKey(Modifier.weight(1F))
+			NavigatorKey(editorPlane, editorPlaneIcon, Modifier.weight(1F))
+			NavigatorKey(clipboardPlane, clipboardPlaneIcon, Modifier.weight(1F))
 			ImPickerKey(Modifier.weight(1F))
 		}
 	}

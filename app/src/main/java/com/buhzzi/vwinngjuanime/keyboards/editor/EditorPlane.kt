@@ -4,6 +4,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.util.Base64
+import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.ExtractedTextRequest
 import android.view.inputmethod.InputConnection
 import androidx.compose.foundation.border
@@ -22,19 +23,20 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Backspace
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.ContentCut
 import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardDoubleArrowLeft
 import androidx.compose.material.icons.filled.KeyboardDoubleArrowRight
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material.icons.filled.SwitchLeft
 import androidx.compose.material.icons.filled.SwitchRight
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
@@ -45,24 +47,35 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import com.buhzzi.vwinngjuanime.R
 import com.buhzzi.vwinngjuanime.VwinngjuanIms
 import com.buhzzi.vwinngjuanime.fromBytes
-import com.buhzzi.vwinngjuanime.keyboards.ClipboardPlaneNavigatorKey
-import com.buhzzi.vwinngjuanime.keyboards.EditorPlaneNavigatorKey
+import com.buhzzi.vwinngjuanime.keyboards.ActionDoneKey
+import com.buhzzi.vwinngjuanime.keyboards.ActionGoKey
+import com.buhzzi.vwinngjuanime.keyboards.ActionNextKey
+import com.buhzzi.vwinngjuanime.keyboards.ActionPreviousKey
+import com.buhzzi.vwinngjuanime.keyboards.ActionSearchKey
+import com.buhzzi.vwinngjuanime.keyboards.ActionSendKey
 import com.buhzzi.vwinngjuanime.keyboards.KeyContent
-import com.buhzzi.vwinngjuanime.keyboards.NavigatorPlaneNavigatorKey
+import com.buhzzi.vwinngjuanime.keyboards.NavigatorKey
 import com.buhzzi.vwinngjuanime.keyboards.OutlinedClickable
 import com.buhzzi.vwinngjuanime.keyboards.OutlinedKey
 import com.buhzzi.vwinngjuanime.keyboards.OutlinedSpace
 import com.buhzzi.vwinngjuanime.keyboards.Plane
 import com.buhzzi.vwinngjuanime.keyboards.PlaneGoBackKey
 import com.buhzzi.vwinngjuanime.keyboards.backspaceText
+import com.buhzzi.vwinngjuanime.keyboards.clipboardPlaneIcon
 import com.buhzzi.vwinngjuanime.keyboards.commitText
+import com.buhzzi.vwinngjuanime.keyboards.editorPlaneIcon
+import com.buhzzi.vwinngjuanime.keyboards.goToPlane
+import com.buhzzi.vwinngjuanime.keyboards.navigatorPlane
+import com.buhzzi.vwinngjuanime.keyboards.navigatorPlaneIcon
 import com.buhzzi.vwinngjuanime.keyboards.planeGoBack
 import com.buhzzi.vwinngjuanime.toBytes
 import java.math.BigInteger
@@ -138,7 +151,7 @@ private fun RightKey(
 	modifier: Modifier = Modifier,
 ) {
 	OutlinedKey(
-		KeyContent(Icons.AutoMirrored.Filled.KeyboardArrowRight),
+		KeyContent(Icons.Filled.KeyboardArrowRight),
 		modifier,
 	) {
 		currentInputConnection?.apply {
@@ -170,6 +183,63 @@ private fun RightMostKey(
 		currentInputConnection?.apply {
 			val length = getExtractedText(ExtractedTextRequest(), 0x0)?.text?.length ?: Int.MAX_VALUE
 			applyCarets(carets) { length to length }
+		}
+	}
+}
+
+@Composable
+internal fun FunctionalKeysRow(
+	modifier: Modifier = Modifier,
+) {
+	CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+		Row(modifier) {
+			OutlinedKey(KeyContent(editorPlaneIcon), Modifier.weight(1F)) {
+				goToPlane(editorPlane)
+			}
+			LeftMostKey(Modifier.weight(1F))
+			LeftKey(Modifier.weight(1F))
+			ToggleLeftKey(Modifier.weight(1F))
+			ToggleRightKey(Modifier.weight(1F))
+			RightKey(Modifier.weight(1F))
+			RightMostKey(Modifier.weight(1F))
+			when (VwinngjuanIms.instanceMust.imeOptions and EditorInfo.IME_MASK_ACTION) {
+				EditorInfo.IME_ACTION_GO -> {
+					println("ime action go")
+					ActionGoKey(Modifier.weight(1F))
+				}
+
+				EditorInfo.IME_ACTION_SEARCH -> {
+					println("ime action search")
+					ActionSearchKey(Modifier.weight(1F))
+				}
+
+				EditorInfo.IME_ACTION_SEND -> {
+					println("ime action send")
+					ActionSendKey(Modifier.weight(1F))
+				}
+
+				EditorInfo.IME_ACTION_NEXT -> {
+					println("ime action next")
+					ActionNextKey(Modifier.weight(1F))
+				}
+
+				EditorInfo.IME_ACTION_DONE -> {
+					println("ime action done")
+					ActionDoneKey(Modifier.weight(1F))
+				}
+
+				EditorInfo.IME_ACTION_PREVIOUS -> {
+					println("ime action previous")
+					ActionPreviousKey(Modifier.weight(1F))
+				}
+
+				else -> {
+					println("no ime action")
+					OutlinedKey(KeyContent(clipboardPlaneIcon), Modifier.weight(1F)) {
+						goToPlane(clipboardPlane)
+					}
+				}
+			}
 		}
 	}
 }
@@ -242,8 +312,8 @@ internal val editorPlane: Plane = Plane({ stringResource(R.string.editor_plane) 
 	Column {
 		Row(Modifier.weight(1F)) {
 			PlaneGoBackKey(Modifier.weight(1F))
-			ClipboardPlaneNavigatorKey(Modifier.weight(1F))
-			NavigatorPlaneNavigatorKey(Modifier.weight(1F))
+			NavigatorKey(clipboardPlane, clipboardPlaneIcon, Modifier.weight(1F))
+			NavigatorKey(navigatorPlane, navigatorPlaneIcon, Modifier.weight(1F))
 		}
 		Row(Modifier.weight(2F)) {
 			Column(Modifier.weight(1F)) {
@@ -362,8 +432,8 @@ internal val clipboardPlane = Plane({ stringResource(R.string.clipboard_plane) }
 	Column {
 		Row(Modifier.weight(1F)) {
 			PlaneGoBackKey(Modifier.weight(1F))
-			EditorPlaneNavigatorKey(Modifier.weight(1F))
-			NavigatorPlaneNavigatorKey(Modifier.weight(1F))
+			NavigatorKey(editorPlane, editorPlaneIcon, Modifier.weight(1F))
+			NavigatorKey(navigatorPlane, navigatorPlaneIcon, Modifier.weight(1F))
 		}
 
 		val ims = VwinngjuanIms.instanceMust
