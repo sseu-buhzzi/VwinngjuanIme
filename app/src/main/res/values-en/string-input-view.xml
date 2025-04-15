@@ -9,7 +9,10 @@
 	<string name="clipboard_copy">Copy</string>
 	<string name="clipboard_paste">Paste</string>
 	<string name="clipboard_backspace">Backspace</string>
+	<string name="qwerty_fullwidth_plane">QWERTY Fullwidth</string>
+	<string name="latin_specials_plane">Latin Specials</string>
 	<string name="vwinngjuan_plane">Vwin Tzuih</string>
+	<string name="tzuih_specials_plane">Tzuih Specials</string>
 	<string name="kana_plane">Kana</string>
 	<string name="kana_specials_plane">Kana Specials</string>
 </resources>
