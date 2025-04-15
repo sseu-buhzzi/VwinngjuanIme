@@ -1,19 +1,11 @@
 package com.buhzzi.vwinngjuanime.keyboards.kana
 
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.EmojiSymbols
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -26,17 +18,17 @@ import androidx.compose.ui.unit.dp
 import com.buhzzi.vwinngjuanime.R
 import com.buhzzi.vwinngjuanime.keyboards.KeyContent
 import com.buhzzi.vwinngjuanime.keyboards.OutlinedKey
-import com.buhzzi.vwinngjuanime.keyboards.OutlinedSpace
 import com.buhzzi.vwinngjuanime.keyboards.Plane
 import com.buhzzi.vwinngjuanime.keyboards.commitText
-import com.buhzzi.vwinngjuanime.keyboards.goToPlane
+import com.buhzzi.vwinngjuanime.keyboards.editor.FunctionalKeysRow
 import com.buhzzi.vwinngjuanime.keyboards.latin.BackspaceKey
-import com.buhzzi.vwinngjuanime.keyboards.latin.CtrlKey
 import com.buhzzi.vwinngjuanime.keyboards.latin.EnterKey
+import com.buhzzi.vwinngjuanime.keyboards.latin.FullwidthSpaceKey
 import com.buhzzi.vwinngjuanime.keyboards.latin.MetaKey
-import com.buhzzi.vwinngjuanime.keyboards.latin.SpaceKey
-import com.buhzzi.vwinngjuanime.keyboards.latin.WithActionKey
-import com.buhzzi.vwinngjuanime.keyboards.planeGoBack
+import com.buhzzi.vwinngjuanime.keyboards.tzuih.SpecialsCategory
+import com.buhzzi.vwinngjuanime.keyboards.tzuih.SpecialsComposable
+import com.buhzzi.vwinngjuanime.keyboards.tzuih.SpecialsItem
+import com.buhzzi.vwinngjuanime.keyboards.tzuih.SpecialsKey
 
 private enum class KanaType {
 	HIRAGANA,
@@ -95,7 +87,7 @@ private fun ShiftKanaTypeKey(
 	modifier: Modifier = Modifier,
 ) {
 	OutlinedKey(
-		KeyContent(when (targetKanaType) {
+		KeyContent(when (kanaType) {
 			KanaType.HIRAGANA -> "平"
 			KanaType.KATAKANA -> "片"
 		}.reversed()),
@@ -124,22 +116,12 @@ private fun ShiftKanaVariationKey(
 	}
 }
 
-@Composable
-private fun SpecialsKey(modifier: Modifier = Modifier) {
-	OutlinedKey(
-		KeyContent(Icons.Filled.EmojiSymbols),
-		modifier,
-	) {
-		goToPlane(kanaSpecialsPlane)
-	}
-}
-
 internal val kanaPlane: Plane = Plane({ stringResource(R.string.kana_plane) }) {
 	CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
 		Column {
+			FunctionalKeysRow(Modifier.weight(1F))
 			Row(Modifier.weight(1F)) {
 				MetaKey(Modifier.weight(1F))
-				SpecialsKey(Modifier.weight(1F))
 				ShiftKanaTypeKey(when (kanaType) {
 					KanaType.HIRAGANA -> KanaType.KATAKANA
 					KanaType.KATAKANA -> KanaType.HIRAGANA
@@ -157,7 +139,7 @@ internal val kanaPlane: Plane = Plane({ stringResource(R.string.kana_plane) }) {
 						},
 					)
 				}
-				CtrlKey(Modifier.weight(1F))
+				SpecialsKey(kanaSpecialsPlane, Modifier.weight(1F))
 				BackspaceKey(Modifier.weight(1F))
 			}
 			Row(Modifier.weight(5F)) {
@@ -321,16 +303,16 @@ internal val kanaPlane: Plane = Plane({ stringResource(R.string.kana_plane) }) {
 						"ヤ", "", "", "ャ",
 					Modifier.weight(1F))
 					KanaKey(
-						"\uD82C\uDC06", "", "", "",
-						"\uD82C\uDD20", "", "", "",
+						"𛀆", "", "", "",
+						"𛄠", "", "", "",
 					Modifier.weight(1F))
 					KanaKey(
 						"ゆ", "", "", "ゅ",
 						"ユ", "", "", "ュ",
 					Modifier.weight(1F))
 					KanaKey(
-						"\uD82C\uDC01", "", "", "",
-						"\uD82C\uDD21", "", "", "",
+						"𛀁", "", "", "",
+						"𛄡", "", "", "",
 					Modifier.weight(1F))
 					KanaKey(
 						"よ", "", "", "ょ",
@@ -365,20 +347,20 @@ internal val kanaPlane: Plane = Plane({ stringResource(R.string.kana_plane) }) {
 						"ワ", "ヷ", "", "ヮ",
 					Modifier.weight(1F))
 					KanaKey(
-						"ゐ", "ゐ゙", "", "\uD82C\uDD50",
-						"ヰ", "ヸ", "", "\uD82C\uDD64",
+						"ゐ", "ゐ゙", "", "𛅐",
+						"ヰ", "ヸ", "", "𛅤",
 					Modifier.weight(1F))
 					KanaKey(
-						"\uD82C\uDD1F", "", "", "\uD82C\uDD1F",
-						"\uD82C\uDD22", "", "", "\uD82C\uDD22",
+						"𛄟", "", "", "𛄟",
+						"\uD82C\uDD22", "", "", "𛄢",
 					Modifier.weight(1F))
 					KanaKey(
-						"ゑ", "ゑ゙", "", "\uD82C\uDD51",
-						"ヱ", "ヹ", "", "\uD82C\uDD65",
+						"ゑ", "ゑ゙", "", "𛅑",
+						"ヱ", "ヹ", "", "𛅥",
 					Modifier.weight(1F))
 					KanaKey(
-						"を", "を゙", "", "\uD82C\uDD52",
-						"ヲ", "ヺ", "", "\uD82C\uDD66",
+						"を", "を゙", "", "𛅒",
+						"ヲ", "ヺ", "", "𛅦",
 					Modifier.weight(1F))
 				}
 			}
@@ -391,101 +373,50 @@ internal val kanaPlane: Plane = Plane({ stringResource(R.string.kana_plane) }) {
 					"、", "、", "、", "、",
 					"！", "！", "！", "！",
 				Modifier.weight(1F))
-				SpaceKey(Modifier.weight(4F))
+				FullwidthSpaceKey(Modifier.weight(4F))
 				KanaKey(
 					"ん", "", "", "",
-					"ン", "", "", "\uD82C\uDD67",
+					"ン", "", "", "𛅧",
 				Modifier.weight(1F))
-				WithActionKey(Modifier.weight(2F)) {
-					EnterKey(Modifier.weight(1F))
-				}
+				EnterKey(Modifier.weight(2F))
 			}
 		}
 	}
 }
 
-internal const val KANA_SPECIALS_TITLE_SIZE = 0x40
-internal const val KANA_SPECIALS_ITEM_ROW_SIZE = 0x40
-internal const val KANA_SPECIALS_ROW_COUNT = 0x4
-
-internal val kanaSpecialsPlane = Plane({ stringResource(R.string.kana_specials_plane) }) {
+private val kanaSpecialsPlane = Plane({ stringResource(R.string.kana_specials_plane) }) {
 	CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-		Column {
-			val categories = remember { mutableStateListOf(
-				"述\n字" to sequenceOf(
-					'⿰' .. '⿻',
-					'〾' .. '〿',
-				).flatten().map { "$it" to "$it" },
-				"文\n法" to sequenceOf(
-					'、' .. '〠',
-					'〰' .. '〰',
-					'〶' .. '〶',
-					'〻' .. '〽',
-					'゙' .. 'ゞ',
-					'゠' .. '゠',
-					'・' .. 'ヾ',
-				).flatten().map { "$it" to "$it" },
-				"舊\n遣" to sequenceOf(
-					'〱' .. '〵',
-					'ゟ' .. 'ゟ',
-					'ヿ' .. 'ヿ',
-				).flatten().map { "$it" to "$it" },
-				"序\n號" to sequenceOf(
-					'㈠' .. '㍰',
-					'㍺' .. '㍿',
-					'㏠' .. '㏾',
-				).flatten().map { "$it" to "$it" },
-				"單\n位" to sequenceOf(
-					'㍱' .. '㍹',
-					'㎀' .. '㏟',
-					'㏿' .. '㏿',
-				).flatten().map { "$it" to "$it" },
-			) }
-			var selectedCategory by remember { mutableStateOf(categories.first().second) }
-			Row(Modifier.weight(1F)) {
-				OutlinedKey(
-					KeyContent(Icons.AutoMirrored.Filled.ArrowBack),
-					Modifier.weight(1F),
-				) {
-					planeGoBack()
-				}
-				OutlinedSpace(Modifier.weight(5F)) {
-					LazyRow {
-						items(categories) { (categoryTitle, category) ->
-							OutlinedKey(
-								KeyContent(categoryTitle),
-								Modifier.width(KANA_SPECIALS_TITLE_SIZE.dp),
-								movedThreshold = 0F,
-							) {
-								selectedCategory = category
-							}
-						}
-					}
-				}
-				BackspaceKey(Modifier.weight(1F))
-			}
-			OutlinedSpace(Modifier.weight(4F)) {
-				LazyRow {
-					items(
-						selectedCategory.windowed(KANA_SPECIALS_ROW_COUNT, KANA_SPECIALS_ROW_COUNT, true).toList()
-					) { row ->
-						Column(Modifier.width(KANA_SPECIALS_ITEM_ROW_SIZE.dp)) {
-							row.forEach { (text, label) ->
-								OutlinedKey(
-									KeyContent(label),
-									Modifier.weight(1F),
-									movedThreshold = 0F,
-								) {
-									commitText(text)
-								}
-							}
-							(KANA_SPECIALS_ROW_COUNT - row.size).takeIf { it > 0x0 }?.apply {
-								Box(Modifier.weight(toFloat()))
-							}
-						}
-					}
-				}
-			}
-		}
+		SpecialsComposable(remember { listOf(
+			SpecialsCategory("述\n字", buildList {
+				addAll(('⿰' .. '⿻').map { SpecialsItem(it) })
+				addAll(('〾' .. '〿').map { SpecialsItem(it) })
+			}),
+			SpecialsCategory("文\n法", buildList {
+				addAll(('　' .. '〠').map { SpecialsItem(it) })
+				add(SpecialsItem('〰'))
+				add(SpecialsItem('〶'))
+				addAll(('〻' .. '〽').map { SpecialsItem(it) })
+				addAll(('゛' .. 'ゞ').map { SpecialsItem(it) })
+				add(SpecialsItem("◌゙", "゙"))
+				add(SpecialsItem("◌゚", "゚"))
+				addAll(('゠' .. '゠').map { SpecialsItem(it) })
+				addAll(('・' .. 'ヾ').map { SpecialsItem(it) })
+			}),
+			SpecialsCategory("舊\n遣", buildList {
+				addAll(('〱' .. '〵').map { SpecialsItem(it) })
+				addAll(('ゟ' .. 'ゟ').map { SpecialsItem(it) })
+				addAll(('ヿ' .. 'ヿ').map { SpecialsItem(it) })
+			}),
+			SpecialsCategory("序\n號", buildList {
+				addAll(('㈠' .. '㍰').map { SpecialsItem(it) })
+				addAll(('㍺' .. '㍿').map { SpecialsItem(it) })
+				addAll(('㏠' .. '㏾').map { SpecialsItem(it) })
+			}),
+			SpecialsCategory("單\n位", buildList {
+				addAll(('㍱' .. '㍹').map { SpecialsItem(it) })
+				addAll(('㎀' .. '㏟').map { SpecialsItem(it) })
+				addAll(('㏿' .. '㏿').map { SpecialsItem(it) })
+			}),
+		) })
 	}
 }

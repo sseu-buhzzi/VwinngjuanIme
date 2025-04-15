@@ -45,11 +45,10 @@ import com.buhzzi.vwinngjuanime.keyboards.OutlinedSpace
 import com.buhzzi.vwinngjuanime.keyboards.Plane
 import com.buhzzi.vwinngjuanime.keyboards.backspaceText
 import com.buhzzi.vwinngjuanime.keyboards.commitText
-import com.buhzzi.vwinngjuanime.keyboards.latin.CtrlKey
+import com.buhzzi.vwinngjuanime.keyboards.editor.FunctionalKeysRow
+import com.buhzzi.vwinngjuanime.keyboards.latin.FullwidthSpaceKey
 import com.buhzzi.vwinngjuanime.keyboards.latin.MetaKey
-import com.buhzzi.vwinngjuanime.keyboards.latin.SpaceKey
 import com.buhzzi.vwinngjuanime.keyboards.latin.TabKey
-import com.buhzzi.vwinngjuanime.keyboards.latin.WithActionKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlin.io.path.deleteIfExists
@@ -263,15 +262,16 @@ internal val vwinngjuanPlane = Plane({ stringResource(R.string.vwinngjuan_plane)
 	}
 
 	Column {
+		FunctionalKeysRow(Modifier.weight(1F))
 		Row(Modifier.weight(1F)) {
 			TabKey(Modifier.weight(1F))
-			LejKey('`', Modifier.weight(1F))
-			LejKey('\'', Modifier.weight(1F))
+			LejKey('〜', Modifier.weight(1F))
+			LejKey('〇', Modifier.weight(1F))
 			LejKey('「', Modifier.weight(1F))
 			LejKey('」', Modifier.weight(1F))
 			LejKey('・', Modifier.weight(1F))
-			LejKey('-', Modifier.weight(1F))
-			LejKey('=', Modifier.weight(1F))
+			LejKey('々', Modifier.weight(1F))
+			LejKey('〻', Modifier.weight(1F))
 			BackspaceKey(Modifier.weight(2F))
 		}
 		val e = creatingTzhuComposerException
@@ -326,10 +326,10 @@ internal val vwinngjuanPlane = Plane({ stringResource(R.string.vwinngjuan_plane)
 					LejKey('j', Modifier.weight(1F))
 					LejKey('k', Modifier.weight(1F))
 					LejKey('l', Modifier.weight(1F))
-					LejKey(';', Modifier.weight(1F))
+					LejKey('〃', Modifier.weight(1F))
 				}
 				Row(Modifier.weight(1F)) {
-					LejKey('/', Modifier.weight(1F))
+					LejKey('〾', Modifier.weight(1F))
 					LejKey('z', Modifier.weight(1F))
 					LejKey('x', Modifier.weight(1F))
 					LejKey('c', Modifier.weight(1F))
@@ -350,11 +350,46 @@ internal val vwinngjuanPlane = Plane({ stringResource(R.string.vwinngjuan_plane)
 				usingOptions = true
 			}
 			MetaKey(Modifier.weight(1F))
-			SpaceKey(Modifier.weight(4F))
-			CtrlKey(Modifier.weight(1F))
-			WithActionKey(Modifier.weight(2F)) {
-				EnterKey(Modifier.weight(1F))
-			}
+			FullwidthSpaceKey(Modifier.weight(4F))
+			SpecialsKey(tzuihSpecialsPlane, Modifier.weight(1F))
+			EnterKey(Modifier.weight(2F))
 		}
+	}
+}
+
+private val tzuihSpecialsPlane = Plane({ stringResource(R.string.tzuih_specials_plane) }) {
+	CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+		SpecialsComposable(remember { listOf(
+			SpecialsCategory("注\n音", buildList {
+				addAll(('ㄅ' .. 'ㄯ').map { SpecialsItem(it) })
+				addAll(('ㆠ' .. 'ㆿ').map { SpecialsItem(it) })
+			}),
+			SpecialsCategory("僞\n康", buildList {
+				addAll(('⼀' .. '⿕').map { SpecialsItem(it) })
+			}),
+			SpecialsCategory("述\n字", buildList {
+				addAll(('⿰' .. '⿿').map { SpecialsItem(it) })
+				addAll(('〾' .. '〿').map { SpecialsItem(it) })
+			}),
+			SpecialsCategory("文\n法", buildList {
+				addAll(('　' .. '】').map { SpecialsItem(it) })
+				addAll(('〔' .. '〟').map { SpecialsItem(it) })
+				add(SpecialsItem('〰'))
+				addAll(('︰' .. '﹏').map { SpecialsItem(it) })
+			}),
+			SpecialsCategory("直\n書", buildList {
+				addAll(('︐' .. '︙').map { SpecialsItem(it) })
+			}),
+			SpecialsCategory("序\n號", buildList {
+				addAll(('㈠' .. '㍰').map { SpecialsItem(it) })
+				addAll(('㍺' .. '㍿').map { SpecialsItem(it) })
+				addAll(('㏠' .. '㏾').map { SpecialsItem(it) })
+			}),
+			SpecialsCategory("單\n位", buildList {
+				addAll(('㍱' .. '㍹').map { SpecialsItem(it) })
+				addAll(('㎀' .. '㏟').map { SpecialsItem(it) })
+				addAll(('㏿' .. '㏿').map { SpecialsItem(it) })
+			}),
+		) })
 	}
 }
