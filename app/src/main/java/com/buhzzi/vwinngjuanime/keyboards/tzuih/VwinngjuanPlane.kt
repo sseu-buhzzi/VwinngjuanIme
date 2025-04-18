@@ -36,6 +36,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import com.buhzzi.util.bigIntegerToString
+import com.buhzzi.util.getSha256Sum
 import com.buhzzi.vwinngjuanime.R
 import com.buhzzi.vwinngjuanime.VwinngjuanIms
 import com.buhzzi.vwinngjuanime.externalFilesDir
@@ -53,6 +55,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.div
+import kotlin.io.path.name
+import kotlin.io.path.readBytes
 import kotlin.system.exitProcess
 
 internal class LejKeyAction(
@@ -192,9 +196,9 @@ private fun deleteTzhuComposer() {
 }
 
 private fun deleteVwinngjuanFiles() {
-	VwinngjuanIms.instance?.externalFilesDir?.toPath()?.let { it / "vwinngjuan" }?.also { vwinngjuanDir ->
+	VwinngjuanIms.instance?.externalFilesDir?.toPath()?.let { it / "vwinngjuan" }?.also { vwinngjuanDirPath ->
 		sequenceOf("lej.tsv", "tzhu-tree.bin").forEach {
-			(vwinngjuanDir / it).deleteIfExists()
+			(vwinngjuanDirPath / it).deleteIfExists()
 		}
 	}
 }
@@ -203,7 +207,28 @@ private fun deleteVwinngjuanFiles() {
 private fun OptionsComposable() {
 	CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
 		Column {
-			Row {
+			OutlinedSpace(Modifier
+				.weight(2F)
+				.verticalScroll(rememberScrollState()),
+			) {
+				Text(remember { buildString {
+					VwinngjuanIms.instance?.externalFilesDir?.toPath()?.let { it / "vwinngjuan" }?.also { vwinngjuanDirPath ->
+						(vwinngjuanDirPath / "lej.tsv").let {
+							appendLine("sha256sum ${it.name}: ${it.getSha256Sum().bigIntegerToString()}")
+						}
+						(vwinngjuanDirPath / "lej.tsv.sha256").let {
+							appendLine("${it.name}: ${it.readBytes().bigIntegerToString()}")
+						}
+						(vwinngjuanDirPath / "tzhu-tree.bin").let {
+							appendLine("sha256sum ${it.name}: ${it.getSha256Sum().bigIntegerToString()}")
+						}
+						(vwinngjuanDirPath / "tzhu-tree.bin.sha256").let {
+							appendLine("${it.name}: ${it.readBytes().bigIntegerToString()}")
+						}
+					}
+				} }, textAlign = TextAlign.Center)
+			}
+			Row(Modifier.weight(1F)) {
 				OutlinedKey(KeyContent(Icons.AutoMirrored.Filled.ArrowBack), Modifier.weight(1F)) {
 					quitOptionsComposable()
 				}

@@ -8,6 +8,8 @@ import androidx.compose.ui.util.fastFlatMap
 import androidx.compose.ui.util.fastJoinToString
 import androidx.compose.ui.util.fastMap
 import androidx.compose.ui.util.fastMapIndexed
+import com.buhzzi.util.bigIntegerToString
+import com.buhzzi.util.getSha256Sum
 import com.buhzzi.vwinngjuanime.VwinngjuanIms
 import com.buhzzi.vwinngjuanime.externalFilesDir
 import com.buhzzi.vwinngjuanime.keyboards.KeyContent
@@ -25,7 +27,6 @@ import java.nio.channels.Channels
 import java.nio.channels.FileChannel
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
-import java.security.MessageDigest
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.div
 import kotlin.io.path.exists
@@ -62,21 +63,9 @@ private fun VwinngjuanIms.validateVwinngjuanResource(name: String) = run {
 					println("Use old hash.")
 				}
 			}
-			fun ByteArray.toBigIntString() = joinToString("") {
-				it.toUByte().toString(0x10).padStart(0x2, '0')
-			}
-			println("Given SHA-256 sum: ${hash?.toBigIntString()}")
-			val digest = MessageDigest.getInstance("SHA-256")
-			val buffer = ByteBuffer.allocate(DEFAULT_BUFFER_SIZE)
-			FileChannel.open(filePath).use { `in` ->
-				while (`in`.read(buffer) != -0x1) {
-					buffer.flip()
-					digest.update(buffer)
-					buffer.clear()
-				}
-			}
-			digest.digest().also { calcHash ->
-				println("Digest: ${calcHash.toBigIntString()}")
+			println("Given SHA-256 sum: ${hash?.bigIntegerToString()}")
+			filePath.getSha256Sum().also { calcHash ->
+				println("Digest: ${calcHash.bigIntegerToString()}")
 			}.contentEquals(hash)
 		}
 	) {
