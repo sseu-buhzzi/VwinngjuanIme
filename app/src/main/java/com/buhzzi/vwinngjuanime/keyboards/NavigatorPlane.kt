@@ -175,11 +175,17 @@ internal val kanaPlaneIcon
 
 internal val navigatorPlane: Plane = Plane({ stringResource(R.string.navigator_plane) }) {
 	Column(Modifier) {
-		Row(Modifier.weight(1F)) {
-			NavigatorKey(qwertyPlane, qwertyPlaneIcon, Modifier.weight(1F))
-			NavigatorKey(qwertyFullwidthPlane, qwertyFullwidthPlaneIcon, Modifier.weight(1F))
-			NavigatorKey(vwinngjuanPlane, vwinngjuanPlaneIcon, Modifier.weight(1F))
-			NavigatorKey(kanaPlane, kanaPlaneIcon, Modifier.weight(1F))
+		Row(Modifier.weight(3F)) {
+			Column(Modifier.weight(1F)) {
+				NavigatorKey(qwertyPlane, qwertyPlaneIcon, Modifier.weight(1F))
+				NavigatorKey(qwertyFullwidthPlane, qwertyFullwidthPlaneIcon, Modifier.weight(1F))
+			}
+			Column(Modifier.weight(1F)) {
+				NavigatorKey(vwinngjuanPlane, vwinngjuanPlaneIcon, Modifier.weight(1F))
+			}
+			Column(Modifier.weight(1F)) {
+				NavigatorKey(kanaPlane, kanaPlaneIcon, Modifier.weight(1F))
+			}
 		}
 		Row(Modifier.weight(1F)) {
 			NavigatorKey(editorPlane, editorPlaneIcon, Modifier.weight(1F))
