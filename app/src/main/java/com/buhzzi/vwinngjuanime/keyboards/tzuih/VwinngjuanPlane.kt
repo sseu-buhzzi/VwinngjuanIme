@@ -55,6 +55,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.div
+import kotlin.io.path.exists
 import kotlin.io.path.name
 import kotlin.io.path.readBytes
 import kotlin.system.exitProcess
@@ -213,17 +214,17 @@ private fun OptionsComposable() {
 			) {
 				Text(remember { buildString {
 					VwinngjuanIms.instance?.externalFilesDir?.toPath()?.let { it / "vwinngjuan" }?.also { vwinngjuanDirPath ->
-						(vwinngjuanDirPath / "lej.tsv").let {
-							appendLine("sha256sum ${it.name}: ${it.getSha256Sum().bigIntegerToString()}")
+						(vwinngjuanDirPath / "lej.tsv").let { path ->
+							appendLine("sha256sum ${path.name}: ${path.takeIf { it.exists() }?.getSha256Sum()?.bigIntegerToString()}")
 						}
-						(vwinngjuanDirPath / "lej.tsv.sha256").let {
-							appendLine("${it.name}: ${it.readBytes().bigIntegerToString()}")
+						(vwinngjuanDirPath / "lej.tsv.sha256").let { path ->
+							appendLine("${path.name}: ${path.takeIf { it.exists() }?.readBytes()?.bigIntegerToString()}")
 						}
-						(vwinngjuanDirPath / "tzhu-tree.bin").let {
-							appendLine("sha256sum ${it.name}: ${it.getSha256Sum().bigIntegerToString()}")
+						(vwinngjuanDirPath / "tzhu-tree.bin").let { path ->
+							appendLine("sha256sum ${path.name}: ${path.takeIf { it.exists() }?.getSha256Sum()?.bigIntegerToString()}")
 						}
-						(vwinngjuanDirPath / "tzhu-tree.bin.sha256").let {
-							appendLine("${it.name}: ${it.readBytes().bigIntegerToString()}")
+						(vwinngjuanDirPath / "tzhu-tree.bin.sha256").let { path ->
+							appendLine("${path.name}: ${path.takeIf { it.exists() }?.readBytes()?.bigIntegerToString()}")
 						}
 					}
 				} }, textAlign = TextAlign.Center)

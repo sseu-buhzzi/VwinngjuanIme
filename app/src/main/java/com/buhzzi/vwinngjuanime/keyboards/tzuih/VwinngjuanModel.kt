@@ -74,6 +74,7 @@ private fun VwinngjuanIms.validateVwinngjuanResource(name: String) = run {
 		println("Start downloading vwinngjuan resource $name.")
 		try {
 			vwinngjuanResourceName = name
+			vwinngjuanResourceDownloaded = 0x0
 			val client = OkHttpClient.Builder()
 				.addInterceptor { chain ->
 					val request = chain.request().newBuilder()
@@ -101,7 +102,6 @@ private fun VwinngjuanIms.validateVwinngjuanResource(name: String) = run {
 							).use { out ->
 								val buffer = ByteBuffer.allocate(DEFAULT_BUFFER_SIZE)
 								var transferred = 0x0L
-								vwinngjuanResourceDownloaded = 0x0
 								while (`in`.read(buffer).also { transferred += it } != -0x1) {
 									vwinngjuanResourceDownloaded = transferred
 									buffer.flip()
