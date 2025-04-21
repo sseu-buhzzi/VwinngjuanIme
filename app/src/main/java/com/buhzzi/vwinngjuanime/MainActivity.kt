@@ -23,6 +23,7 @@ import androidx.compose.material.lightColors
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
@@ -130,23 +131,40 @@ internal fun SettingsComposable(navController: NavController) {
 		}, Modifier.fillMaxWidth()) {
 			Text("Settings")
 		}
+
 		val debugTextPath = remember { context.externalFilesDir.toPath() / "debug.txt" }
 		var debugText by remember { mutableStateOf(runCatching {
 			debugTextPath.readText()
 		}.getOrElse { "" }) }
+		DisposableEffect(Unit) {
+			onDispose {
+				debugTextPath.writeText(debugText)
+			}
+		}
+		OutlinedButton({
+			debugTextPath.writeText(debugText)
+		}, Modifier.fillMaxWidth()) {
+			Text("Save")
+		}
+		OutlinedTextField(debugText, {
+			debugText = it
+		}, Modifier.fillMaxWidth(),
+			label = { Text("Debug") },
+		)
+
 		val focusRequester = FocusRequester()
 		val keyboardController = LocalSoftwareKeyboardController.current
+		var testText by remember { mutableStateOf("") }
 		LaunchedEffect(Unit) {
 			focusRequester.requestFocus()
 			keyboardController?.show()
 		}
-		OutlinedTextField(debugText, {
-			debugTextPath.writeText(it)
-			debugText = it
+		OutlinedTextField(testText, {
+			testText = it
 		}, Modifier
 			.fillMaxWidth()
 			.focusRequester(focusRequester),
-			label = { Text("Test your input here...") },
+			label = { Text("Test") },
 		)
 	}
 }
