@@ -58,6 +58,7 @@ import kotlin.io.path.div
 import kotlin.io.path.exists
 import kotlin.io.path.name
 import kotlin.io.path.readBytes
+import kotlin.math.max
 import kotlin.system.exitProcess
 
 internal class LejKeyAction(
@@ -319,50 +320,66 @@ internal val vwinngjuanPlane = Plane({ stringResource(R.string.vwinngjuan_plane)
 			tzhuComposer == null -> ExceptionContent("組樹: ${null}.")
 			else -> {
 				Row(Modifier.weight(1F)) {
-					LejKey('1', Modifier.weight(1F))
-					LejKey('2', Modifier.weight(1F))
-					LejKey('3', Modifier.weight(1F))
-					LejKey('4', Modifier.weight(1F))
-					LejKey('5', Modifier.weight(1F))
-					LejKey('6', Modifier.weight(1F))
-					LejKey('7', Modifier.weight(1F))
-					LejKey('8', Modifier.weight(1F))
-					LejKey('9', Modifier.weight(1F))
-					LejKey('0', Modifier.weight(1F))
+					val vwinStack = tzhuComposer.vwinStack
+					val tzhuList = vwinStack.tzhuList
+					if (tzhuList.isEmpty()) {
+						LejKey('０', Modifier.weight(1F))
+						LejKey('１', Modifier.weight(1F))
+						LejKey('２', Modifier.weight(1F))
+						LejKey('３', Modifier.weight(1F))
+						LejKey('４', Modifier.weight(1F))
+						LejKey('５', Modifier.weight(1F))
+						LejKey('６', Modifier.weight(1F))
+						LejKey('７', Modifier.weight(1F))
+						LejKey('８', Modifier.weight(1F))
+						LejKey('９', Modifier.weight(1F))
+					} else {
+						val tzuihList = tzhuList.flatMap { tzhu -> tzhu.first.tzuihList }
+						val candidateNumber = 0xa
+						val leadingSpacesNumber = max(candidateNumber - tzuihList.size, 0x0) / 0x2
+						for (tzuihIndex in 0x0 ..< candidateNumber) {
+							tzuihList.getOrNull(tzuihIndex - leadingSpacesNumber)?.let { tzuih ->
+								OutlinedKey(KeyContent(tzuih), Modifier.weight(1F)) {
+									commitText(tzuih)
+									vwinStack.clear()
+								}
+							} ?: OutlinedSpace(Modifier.weight(1F)) { }
+						}
+					}
 				}
 				Row(Modifier.weight(1F)) {
-					LejKey('q', Modifier.weight(1F))
-					LejKey('w', Modifier.weight(1F))
-					LejKey('e', Modifier.weight(1F))
-					LejKey('r', Modifier.weight(1F))
-					LejKey('t', Modifier.weight(1F))
-					LejKey('y', Modifier.weight(1F))
-					LejKey('u', Modifier.weight(1F))
-					LejKey('i', Modifier.weight(1F))
-					LejKey('o', Modifier.weight(1F))
-					LejKey('p', Modifier.weight(1F))
+					LejKey('ｑ', Modifier.weight(1F))
+					LejKey('ｗ', Modifier.weight(1F))
+					LejKey('ｅ', Modifier.weight(1F))
+					LejKey('ｒ', Modifier.weight(1F))
+					LejKey('ｔ', Modifier.weight(1F))
+					LejKey('ｙ', Modifier.weight(1F))
+					LejKey('ｕ', Modifier.weight(1F))
+					LejKey('ｉ', Modifier.weight(1F))
+					LejKey('ｏ', Modifier.weight(1F))
+					LejKey('ｐ', Modifier.weight(1F))
 				}
 				Row(Modifier.weight(1F)) {
-					LejKey('a', Modifier.weight(1F))
-					LejKey('s', Modifier.weight(1F))
-					LejKey('d', Modifier.weight(1F))
-					LejKey('f', Modifier.weight(1F))
-					LejKey('g', Modifier.weight(1F))
-					LejKey('h', Modifier.weight(1F))
-					LejKey('j', Modifier.weight(1F))
-					LejKey('k', Modifier.weight(1F))
-					LejKey('l', Modifier.weight(1F))
+					LejKey('ａ', Modifier.weight(1F))
+					LejKey('ｓ', Modifier.weight(1F))
+					LejKey('ｄ', Modifier.weight(1F))
+					LejKey('ｆ', Modifier.weight(1F))
+					LejKey('ｇ', Modifier.weight(1F))
+					LejKey('ｈ', Modifier.weight(1F))
+					LejKey('ｊ', Modifier.weight(1F))
+					LejKey('ｋ', Modifier.weight(1F))
+					LejKey('ｌ', Modifier.weight(1F))
 					LejKey('〃', Modifier.weight(1F))
 				}
 				Row(Modifier.weight(1F)) {
 					LejKey('〾', Modifier.weight(1F))
-					LejKey('z', Modifier.weight(1F))
-					LejKey('x', Modifier.weight(1F))
-					LejKey('c', Modifier.weight(1F))
-					LejKey('v', Modifier.weight(1F))
-					LejKey('b', Modifier.weight(1F))
-					LejKey('n', Modifier.weight(1F))
-					LejKey('m', Modifier.weight(1F))
+					LejKey('ｚ', Modifier.weight(1F))
+					LejKey('ｘ', Modifier.weight(1F))
+					LejKey('ｃ', Modifier.weight(1F))
+					LejKey('ｖ', Modifier.weight(1F))
+					LejKey('ｂ', Modifier.weight(1F))
+					LejKey('ｎ', Modifier.weight(1F))
+					LejKey('ｍ', Modifier.weight(1F))
 					LejKey('、', Modifier.weight(1F))
 					LejKey('。', Modifier.weight(1F))
 				}
