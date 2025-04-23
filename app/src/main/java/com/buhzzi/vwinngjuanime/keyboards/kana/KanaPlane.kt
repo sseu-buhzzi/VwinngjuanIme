@@ -183,8 +183,8 @@ internal val kanaPlane: Plane = Plane({ stringResource(R.string.kana_plane) }) {
 						"ケ", "ゲ", "ケ゚", "ヶ",
 					Modifier.weight(1F))
 					KanaKey(
-						"こ", "ご", "こ゚", "",
-						"コ", "ゴ", "コ゚", "",
+						"こ", "ご", "こ゚", "𛄲",
+						"コ", "ゴ", "コ゚", "𛅕",
 					Modifier.weight(1F))
 				}
 				Column(Modifier.weight(1F)) {
@@ -375,8 +375,8 @@ internal val kanaPlane: Plane = Plane({ stringResource(R.string.kana_plane) }) {
 				Modifier.weight(1F))
 				FullwidthSpaceKey(Modifier.weight(4F))
 				KanaKey(
-					"ん", "", "", "",
-					"ン", "", "", "𛅧",
+					"ん", "ん", "ん", "",
+					"ン", "ン", "ン", "𛅧",
 				Modifier.weight(1F))
 				EnterKey(Modifier.weight(2F))
 			}
