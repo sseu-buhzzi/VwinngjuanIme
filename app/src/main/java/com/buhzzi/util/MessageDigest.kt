@@ -6,7 +6,7 @@ import java.nio.channels.FileChannel
 import java.nio.file.Path
 import java.security.MessageDigest
 
-fun Path.getSha256Sum() = MessageDigest.getInstance("SHA-256").run {
+fun Path.getSha256Sum(): ByteArray = MessageDigest.getInstance("SHA-256").run {
 	val buffer = ByteBuffer.allocate(DEFAULT_BUFFER_SIZE)
 	FileChannel.open(this@getSha256Sum).use { `in` ->
 		while (`in`.read(buffer) != -0x1) {
@@ -18,4 +18,4 @@ fun Path.getSha256Sum() = MessageDigest.getInstance("SHA-256").run {
 	digest()
 }
 
-fun ByteArray.bigIntegerToString() = BigInteger(0x1, this).toString(0x10)
+fun ByteArray.bigIntegerToString(): String = BigInteger(0x1, this).toString(0x10)
