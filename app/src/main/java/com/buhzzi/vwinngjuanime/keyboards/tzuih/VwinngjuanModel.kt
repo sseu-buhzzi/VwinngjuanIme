@@ -5,10 +5,8 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.util.fastFlatMap
 import androidx.compose.ui.util.fastJoinToString
-import androidx.compose.ui.util.fastMap
-import androidx.compose.ui.util.fastMapIndexed
+import androidx.compose.ui.util.fastMapNotNull
 import com.buhzzi.util.bigIntegerToString
 import com.buhzzi.util.getSha256Sum
 import com.buhzzi.vwinngjuanime.VwinngjuanIms
@@ -34,7 +32,6 @@ import kotlin.io.path.exists
 import kotlin.io.path.readBytes
 import kotlin.io.path.useLines
 import kotlin.io.path.writeBytes
-import kotlin.system.exitProcess
 
 internal var vwinngjuanResourceName by mutableStateOf<String?>(null)
 
@@ -280,50 +277,57 @@ internal class ComposingVwinStack(
 
 
 internal class TzhuComposer {
-	private val lejList: List<LejInfo> = VwinngjuanIms.instanceMust.validateVwinngjuanResource("lej.tsv").useTsv {
-		map { (lej, vwinString) ->
-			vwinString.split(' ').fastMap { vwinLabel ->
-				VwinInfo(vwinLabel, druannMap[vwinLabel])
-			}.run {
-				LejInfo(lej, lejKeyMapPatternList[size], this)
-			}
-		}.toList()
+	val lejDataMap = VwinngjuanIms.instanceMust.validateVwinngjuanResource("lej.tsv").useTsv {
+		map { (keyTableLabel, keyLabel, keyString) ->
+			Triple(keyTableLabel.takeIf { it.isNotEmpty() }, keyLabel.takeIf { it.isNotEmpty() }, keyString[0x0])
+		}.groupBy({ (keyTableLabel, _, _) ->
+			keyTableLabel
+		}) { (_, keyLabel, keyChar) ->
+			keyLabel to keyChar
+		}.toMutableMap()
 	}
 
-
-	val lejKeyMap: Map<Char, LejKeyAction> = generateKeyMapFromPattern(lejList.fastMapIndexed { lejIndex, lejInfo ->
-		LejKeyAction(lejInfo.label.run {
-			substring(0x0, offsetByCodePoints(0x0, 0x1))
-		}.let { lejRepresent ->
-			druannMap[lejRepresent]?.let { KeyContent(druannIcon(it)) }
-				?: KeyContent(lejRepresent)
-		}) { keyMap = vwinKeyMapList[lejIndex] }
-	}, lejKeyMapPatternList[lejList.size])
-		.also { keyMap = it }
-
-	private val vwinKeyMapList = lejList.fastMap { lej ->
-		// TODO 移除try-catch塊。
-		try {
-			generateKeyMapFromPattern(lej.vwinList.fastMap { vwin ->
-				LejKeyAction(vwin.druann
-					?.let { KeyContent(druannIcon(it)) }
-					?: KeyContent(vwin.label)
-				) {
-					vwinStack.push(vwin)
-					keyMap = lejKeyMap
+	val fullVwinList = lejDataMap.mapNotNull { (keyTableLabel, vwinDataList) ->
+		keyTableLabel?.let {
+			vwinDataList.fastMapNotNull { (keyLabel, _) ->
+				keyLabel?.let { vwinLabel ->
+					VwinInfo(vwinLabel, druannMap[vwinLabel])
 				}
-			}, lej.keyMapPattern)
-		} catch (e: Exception) {
-			println("Error on ${lej.label}, ${lej.vwinList.size}/${lej.keyMapPattern.count { it == KeyMapPatternChar.ACTIVE }}: $e")
-			e.printStackTrace()
-			exitProcess(-0x1)
+			}
 		}
-	}
-
-
-	val fullVwinList = lejList.fastFlatMap { it.vwinList }
+	}.flatten()
 
 	val vwinCodeMap = fullVwinList.withIndex().associate { (code, vwin) -> vwin.label to code }
+
+	val lejKeyTable = lejDataMap.remove(null)!!.associate { (lejLabel, keyChar) ->
+		keyChar to if (lejLabel == null) {
+			LejKeyContentAction(KeyContent("")) { }
+		} else {
+			LejKeyContentAction(lejLabel.run {
+				substring(0x0, length - 0x3)
+			}.let { lejRepresent ->
+				druannMap[lejRepresent]?.let { KeyContent(druannIcon(it)) }
+					?: KeyContent(lejRepresent)
+			}) {
+				keyTable = vwinKeyTableMap[lejLabel]
+			}
+		}
+	}.also { keyTable = it }
+
+	private val vwinKeyTableMap: Map<String, Map<Char, LejKeyContentAction>> = lejDataMap.map { (lejLabel, vwinDataList) ->
+		lejLabel!! to vwinDataList.associate { (vwinLabel, keyChar) ->
+			keyChar to if (vwinLabel == null) {
+				LejKeyContentAction(KeyContent("")) { }
+			} else {
+				LejKeyContentAction(druannMap[vwinLabel]?.let { KeyContent(druannIcon(it)) }
+					?: KeyContent(vwinLabel)
+				) {
+					vwinStack.push(fullVwinList[vwinCodeMap[vwinLabel]!!])
+					keyTable = lejKeyTable
+				}
+			}
+		}
+	}.toMap()
 
 	val root = TzhuNode(
 		VwinngjuanIms.instanceMust.validateVwinngjuanResource("tzhu-tree.bin").toFile(),
@@ -332,25 +336,11 @@ internal class TzhuComposer {
 
 	val vwinStack = ComposingVwinStack(WeakReference(this))
 
-	private fun generateKeyMapFromPattern(
-		keyActions: Iterable<LejKeyAction>,
-		pattern: String,
-		mappedChars: List<Char> = defaultMappedChars,
-	): Map<Char, LejKeyAction> = run {
-		val charsActive = pattern.mapNotNull { when (it) {
-			KeyMapPatternChar.INACTIVE -> false
-			KeyMapPatternChar.ACTIVE -> true
-			else -> null
-		} }
-		val keyActionIterator = keyActions.iterator()
-		mappedChars.zip(charsActive).associate { (char, active) ->
-			char to if (active) {
-				keyActionIterator.next()
-			} else {
-				LejKeyAction(KeyContent("")) { }
-			}
-		}.also {
-			keyActionIterator.hasNext() && error("Didn't consume all keyActions.")
+	private fun createKeyTable(
+		mappings: Iterable<Pair<LejKeyContentAction?, Char>>,
+	): Map<Char, LejKeyContentAction> = run {
+		mappings.associate { (keyAction, mappedChar) ->
+			mappedChar to (keyAction ?: LejKeyContentAction(KeyContent("")) { })
 		}
 	}
 }

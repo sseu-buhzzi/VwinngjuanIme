@@ -61,14 +61,14 @@ import kotlin.io.path.readBytes
 import kotlin.math.max
 import kotlin.system.exitProcess
 
-internal class LejKeyAction(
+internal class LejKeyContentAction(
 	val content: KeyContent,
 	val action: VwinngjuanIms.() -> Unit,
 ) {
 	override fun toString() = "LejKeyAction($content)"
 }
 
-internal var keyMap by mutableStateOf<Map<Char, LejKeyAction>?>(null)
+internal var keyTable by mutableStateOf<Map<Char, LejKeyContentAction>?>(null)
 
 
 @Composable
@@ -77,8 +77,8 @@ private fun LejKey(
 	modifier: Modifier = Modifier,
 ) {
 	val vwinStack = savedTzhuComposer?.vwinStack
-	(keyMap?.get(keyChar) ?: "$keyChar".let { keyString ->
-		LejKeyAction(KeyContent(keyString)) {
+	(keyTable?.get(keyChar) ?: "$keyChar".let { keyString ->
+		LejKeyContentAction(KeyContent(keyString)) {
 			vwinStack?.takeIf { it.notEmpty }?.apply {
 				commitText(buildTzuih())
 				clear()
@@ -89,7 +89,7 @@ private fun LejKey(
 		OutlinedKey(
 			content,
 			modifier,
-			arrayOf(keyMap),
+			arrayOf(keyTable),
 		) { action() }
 	}
 }
@@ -103,7 +103,7 @@ internal fun BackspaceKey(modifier: Modifier = Modifier) {
 	) {
 		when {
 			tzhuComposer == null -> backspaceText()
-			keyMap !== tzhuComposer.lejKeyMap -> keyMap = tzhuComposer.lejKeyMap
+			keyTable !== tzhuComposer.lejKeyTable -> keyTable = tzhuComposer.lejKeyTable
 			tzhuComposer.vwinStack.notEmpty -> tzhuComposer.vwinStack.pop()
 			else -> backspaceText()
 		}
