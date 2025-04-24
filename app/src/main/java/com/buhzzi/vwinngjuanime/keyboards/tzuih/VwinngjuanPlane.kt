@@ -207,7 +207,7 @@ private fun deleteVwinngjuanFiles() {
 
 @Composable
 private fun OptionsComposable() {
-	CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+	CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
 		Column {
 			OutlinedSpace(Modifier
 				.weight(2F)
@@ -215,17 +215,20 @@ private fun OptionsComposable() {
 			) {
 				Text(remember { buildString {
 					VwinngjuanIms.instance?.externalFilesDir?.toPath()?.let { it / "vwinngjuan" }?.also { vwinngjuanDirPath ->
+						fun ByteArray.toHumanFriendlyString() = bigIntegerToString()
+							.windowedSequence(0x10, 0x10)
+							.joinToString("\n")
 						(vwinngjuanDirPath / "lej.tsv").let { path ->
-							appendLine("sha256sum ${path.name}: ${path.takeIf { it.exists() }?.getSha256Sum()?.bigIntegerToString()}")
+							appendLine("sha256sum ${path.name}:\n${path.takeIf { it.exists() }?.getSha256Sum()?.toHumanFriendlyString()}")
 						}
 						(vwinngjuanDirPath / "lej.tsv.sha256").let { path ->
-							appendLine("${path.name}: ${path.takeIf { it.exists() }?.readBytes()?.bigIntegerToString()}")
+							appendLine("${path.name}:\n${path.takeIf { it.exists() }?.readBytes()?.toHumanFriendlyString()}")
 						}
 						(vwinngjuanDirPath / "tzhu-tree.bin").let { path ->
-							appendLine("sha256sum ${path.name}: ${path.takeIf { it.exists() }?.getSha256Sum()?.bigIntegerToString()}")
+							appendLine("sha256sum ${path.name}:\n${path.takeIf { it.exists() }?.getSha256Sum()?.toHumanFriendlyString()}")
 						}
 						(vwinngjuanDirPath / "tzhu-tree.bin.sha256").let { path ->
-							appendLine("${path.name}: ${path.takeIf { it.exists() }?.readBytes()?.bigIntegerToString()}")
+							appendLine("${path.name}:\n${path.takeIf { it.exists() }?.readBytes()?.toHumanFriendlyString()}")
 						}
 					}
 				} }, textAlign = TextAlign.Center)
