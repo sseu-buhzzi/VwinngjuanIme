@@ -117,269 +117,322 @@ private fun ShiftKanaVariationKey(
 }
 
 internal val kanaPlane: Plane = Plane({ stringResource(R.string.kana_plane) }) {
-	CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-		Column {
-			FunctionalKeysRow(Modifier.weight(1F))
-			Row(Modifier.weight(1F)) {
-				MetaKey(Modifier.weight(1F))
-				ShiftKanaTypeKey(when (kanaType) {
-					KanaType.HIRAGANA -> KanaType.KATAKANA
-					KanaType.KATAKANA -> KanaType.HIRAGANA
-				}, Modifier.weight(1F))
-				sequenceOf(
-					KanaVariation.SEI,
-					KanaVariation.DAKU,
-					KanaVariation.HANDAKU,
-					KanaVariation.KOGAKI,
-				).forEach {
-					ShiftKanaVariationKey(it, Modifier.weight(1F)
-						.run {
-							if (kanaVariation == it) border(0x1.dp, Color.hsl(0F, 0F, 0.5F))
-							else this
-						},
-					)
-				}
-				SpecialsKey(kanaSpecialsPlane, Modifier.weight(1F))
-				BackspaceKey(Modifier.weight(1F))
+	Column {
+		FunctionalKeysRow(Modifier.weight(1F))
+		Row(Modifier.weight(1F)) {
+			KanaKey(
+				"ん", "ん", "ん", "",
+				"ン", "ン", "ン", "𛅧",
+				Modifier.weight(1F),
+			)
+			ShiftKanaTypeKey(when (kanaType) {
+				KanaType.HIRAGANA -> KanaType.KATAKANA
+				KanaType.KATAKANA -> KanaType.HIRAGANA
+			}, Modifier.weight(1F))
+			sequenceOf(
+				KanaVariation.SEI,
+				KanaVariation.DAKU,
+				KanaVariation.HANDAKU,
+				KanaVariation.KOGAKI,
+			).forEach {
+				ShiftKanaVariationKey(it, Modifier.weight(1F)
+					.run {
+						if (kanaVariation == it) border(0x1.dp, Color.hsl(0F, 0F, 0.5F))
+						else this
+					},
+				)
 			}
+			BackspaceKey(Modifier.weight(2F))
+		}
+		CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
 			Row(Modifier.weight(5F)) {
 				Column(Modifier.weight(1F)) {
 					KanaKey(
 						"あ", "あ゙", "あ゚", "ぁ",
 						"ア", "ア゙", "ア゚", "ァ",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"い", "い゙", "い゚", "ぃ",
 						"イ", "イ゙", "イ゚", "ィ",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"う", "ゔ", "う゚", "ぅ",
 						"ウ", "ヴ", "ウ゚", "ゥ",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"え", "え゙", "え゚", "ぇ",
 						"エ", "エ゙", "エ゚", "ェ",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"お", "お゙", "お゚", "ぉ",
 						"オ", "オ゙", "オ゚", "ォ",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 				}
 				Column(Modifier.weight(1F)) {
 					KanaKey(
 						"か", "が", "か゚", "ゕ",
 						"カ", "ガ", "カ゚", "ヵ",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"き", "ぎ", "き゚", "",
 						"キ", "ギ", "キ゚", "",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"く", "ぐ", "く゚", "",
 						"ク", "グ", "ク゚", "ㇰ",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"け", "げ", "け゚", "ゖ",
 						"ケ", "ゲ", "ケ゚", "ヶ",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"こ", "ご", "こ゚", "𛄲",
 						"コ", "ゴ", "コ゚", "𛅕",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 				}
 				Column(Modifier.weight(1F)) {
 					KanaKey(
 						"さ", "ざ", "さ゚", "",
 						"サ", "ザ", "サ゚", "",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"し", "じ", "し゚", "",
 						"シ", "ジ", "シ゚", "ㇱ",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"す", "ず", "す゚", "",
 						"ス", "ズ", "ス゚", "ㇲ",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"せ", "ぜ", "せ゚", "",
 						"セ", "ゼ", "セ゚", "ㇳ",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"そ", "ぞ", "そ゚", "",
 						"ソ", "ゾ", "ソ゚", "ㇴ",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 				}
 				Column(Modifier.weight(1F)) {
 					KanaKey(
 						"た", "だ", "た゚", "",
 						"タ", "ダ", "タ゚", "",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"ち", "ぢ", "ち゚", "",
 						"チ", "ヂ", "チ゚", "",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"つ", "づ", "つ゚", "っ",
 						"ツ", "ヅ", "ツ゚", "",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"て", "で", "て゚", "",
 						"テ", "デ", "テ゚", "",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"と", "ど", "と゚", "",
 						"ト", "ド", "ト゚", "",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 				}
 				Column(Modifier.weight(1F)) {
 					KanaKey(
 						"な", "", "な゚", "",
 						"ナ", "", "ナ゚", "",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"に", "", "に゚", "",
 						"ニ", "", "ニ゚", "",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"ぬ", "", "ぬ゚", "",
 						"ヌ", "", "ヌ゚", "",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"ね", "", "ね゚", "",
 						"ネ", "", "ネ゚", "",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"の", "", "の゚", "",
 						"ノ", "", "ノ゚", "",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 				}
 				Column(Modifier.weight(1F)) {
 					KanaKey(
 						"は", "ば", "ぱ", "",
 						"ハ", "バ", "パ", "ㇵ",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"ひ", "び", "ぴ", "",
 						"ヒ", "ビ", "ピ", "ㇶ",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"ふ", "ぶ", "ぷ", "",
 						"フ", "ブ", "プ", "ㇷ",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"へ", "べ", "ぺ", "",
 						"ヘ", "ベ", "ペ", "ㇸ",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"ほ", "ぼ", "ぽ", "",
 						"ホ", "ボ", "ポ", "ㇹ",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 				}
 				Column(Modifier.weight(1F)) {
 					KanaKey(
 						"ま", "", "", "",
 						"マ", "", "", "",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"み", "", "", "",
 						"ミ", "", "", "",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"む", "", "", "",
 						"ム", "", "", "ㇺ",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"め", "", "", "",
 						"メ", "", "", "",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"も", "", "", "",
 						"モ", "", "", "",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 				}
 				Column(Modifier.weight(1F)) {
 					KanaKey(
 						"や", "", "", "ゃ",
 						"ヤ", "", "", "ャ",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"𛀆", "", "", "",
 						"𛄠", "", "", "",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"ゆ", "", "", "ゅ",
 						"ユ", "", "", "ュ",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"𛀁", "", "", "",
 						"𛄡", "", "", "",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"よ", "", "", "ょ",
 						"ヨ", "", "", "ョ",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 				}
 				Column(Modifier.weight(1F)) {
 					KanaKey(
 						"ら", "", "ら゚", "",
 						"ラ", "", "ラ゚", "ㇻ",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"り", "", "り゚", "",
 						"リ", "", "リ゚", "ㇼ",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"る", "", "る゚", "",
 						"ル", "", "ル゚", "ㇽ",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"れ", "", "れ゚", "",
 						"え", "", "え゚", "ㇾ",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"ろ", "", "ろ゚", "",
 						"ロ", "", "ロ゚", "ㇿ",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 				}
 				Column(Modifier.weight(1F)) {
 					KanaKey(
 						"わ", "わ゙", "", "",
 						"ワ", "ヷ", "", "ヮ",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"ゐ", "ゐ゙", "", "𛅐",
 						"ヰ", "ヸ", "", "𛅤",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"𛄟", "", "", "𛄟",
 						"\uD82C\uDD22", "", "", "𛄢",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"ゑ", "ゑ゙", "", "𛅑",
 						"ヱ", "ヹ", "", "𛅥",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 					KanaKey(
 						"を", "を゙", "", "𛅒",
 						"ヲ", "ヺ", "", "𛅦",
-					Modifier.weight(1F))
+						Modifier.weight(1F),
+					)
 				}
 			}
-			Row(Modifier.weight(1F)) {
-				KanaKey(
-					"。", "。", "。", "。",
-					"？", "？", "？", "？",
-					Modifier.weight(1F))
-				KanaKey(
-					"、", "、", "、", "、",
-					"！", "！", "！", "！",
-				Modifier.weight(1F))
-				FullwidthSpaceKey(Modifier.weight(4F))
-				KanaKey(
-					"ん", "ん", "ん", "",
-					"ン", "ン", "ン", "𛅧",
-				Modifier.weight(1F))
-				EnterKey(Modifier.weight(2F))
-			}
+		}
+		Row(Modifier.weight(1F)) {
+			KanaKey(
+				"。", "。", "。", "。",
+				"？", "？", "？", "？",
+				Modifier.weight(1F),
+			)
+			KanaKey(
+				"、", "、", "、", "、",
+				"！", "！", "！", "！",
+				Modifier.weight(1F),
+			)
+			MetaKey(Modifier.weight(1F))
+			FullwidthSpaceKey(Modifier.weight(4F))
+			SpecialsKey(kanaSpecialsPlane, Modifier.weight(1F))
+			EnterKey(Modifier.weight(2F))
 		}
 	}
 }
