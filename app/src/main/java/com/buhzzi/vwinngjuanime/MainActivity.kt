@@ -32,6 +32,7 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
@@ -48,7 +49,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.launch
 import java.nio.file.Path
 import kotlin.io.path.createParentDirectories
 import kotlin.io.path.div
@@ -154,34 +155,37 @@ internal fun SettingsComposable(navController: NavController) {
 		}) {
 			Text("Show Input Method Picker")
 		}
-		val openDocumentLauncher = rememberLauncherForActivityResult(
-			ActivityResultContracts.OpenDocumentTree()
-		) { uri ->
-			if (uri != null) {
-				fun copyRecursively(srcFile: DocumentFile, dstPath: Path) {
-					when {
-						srcFile.isDirectory -> {
-							dstPath.createParentDirectories()
-							srcFile.listFiles().forEach { srcSubFile ->
-								srcSubFile.name?.let { copyRecursively(srcSubFile, dstPath / it) }
-							}
-						}
-						srcFile.isFile -> {
-							context.contentResolver.openInputStream(srcFile.uri)?.use { `in` ->
-								dstPath.outputStream().use { out ->
-									`in`.copyTo(out)
-								}
-							}
+		fun importFilesCopyRecursively(srcFile: DocumentFile, dstPath: Path) {
+			when {
+				srcFile.isDirectory -> {
+					dstPath.createParentDirectories()
+					srcFile.listFiles().forEach { srcSubFile ->
+						srcSubFile.name?.let { importFilesCopyRecursively(srcSubFile, dstPath / it) }
+					}
+				}
+				srcFile.isFile -> {
+					context.contentResolver.openInputStream(srcFile.uri)?.use { `in` ->
+						dstPath.outputStream().use { out ->
+							`in`.copyTo(out)
 						}
 					}
 				}
-				DocumentFile.fromTreeUri(context, uri)?.let { userDir ->
-					copyRecursively(userDir, context.externalFilesDir.toPath())
+			}
+		}
+		val importFilesCoroutineScope = rememberCoroutineScope()
+		val importFilesOpenDocumentLauncher = rememberLauncherForActivityResult(
+			ActivityResultContracts.OpenDocumentTree()
+		) { uri ->
+			if (uri != null) {
+				importFilesCoroutineScope.launch(Dispatchers.IO) {
+					DocumentFile.fromTreeUri(context, uri)?.let { userDir ->
+						importFilesCopyRecursively(userDir, context.externalFilesDir.toPath())
+					}
 				}
 			}
 		}
 		OutlinedButton({
-			openDocumentLauncher.launch(null)
+			importFilesOpenDocumentLauncher.launch(null)
 		}) {
 			Text("Import Files")
 		}
