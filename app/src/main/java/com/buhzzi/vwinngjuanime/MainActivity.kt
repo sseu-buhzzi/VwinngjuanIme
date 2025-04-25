@@ -1,16 +1,19 @@
 package com.buhzzi.vwinngjuanime
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
+import android.provider.Settings
 import android.view.inputmethod.InputMethodManager
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedButton
@@ -39,11 +42,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.documentfile.provider.DocumentFile
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.nio.file.Path
+import kotlin.io.path.createParentDirectories
 import kotlin.io.path.div
+import kotlin.io.path.outputStream
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
@@ -127,9 +136,54 @@ internal fun SettingsComposable(navController: NavController) {
 		Alignment.CenterHorizontally,
 	) {
 		OutlinedButton({
+			context.startActivity(Intent(Settings.ACTION_INPUT_METHOD_SETTINGS)
+				.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+			)
+		}) {
+			Text("Input Method Settings")
+		}
+		OutlinedButton({
+			context.startActivity(Intent(Settings.ACTION_INPUT_METHOD_SUBTYPE_SETTINGS)
+				.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+			)
+		}) {
+			Text("Input Method Subtype Settings")
+		}
+		OutlinedButton({
 			context.getSystemService(InputMethodManager::class.java).showInputMethodPicker()
-		}, Modifier.fillMaxWidth()) {
-			Text("Settings")
+		}) {
+			Text("Show Input Method Picker")
+		}
+		val openDocumentLauncher = rememberLauncherForActivityResult(
+			ActivityResultContracts.OpenDocumentTree()
+		) { uri ->
+			if (uri != null) {
+				fun copyRecursively(srcFile: DocumentFile, dstPath: Path) {
+					when {
+						srcFile.isDirectory -> {
+							dstPath.createParentDirectories()
+							srcFile.listFiles().forEach { srcSubFile ->
+								srcSubFile.name?.let { copyRecursively(srcSubFile, dstPath / it) }
+							}
+						}
+						srcFile.isFile -> {
+							context.contentResolver.openInputStream(srcFile.uri)?.use { `in` ->
+								dstPath.outputStream().use { out ->
+									`in`.copyTo(out)
+								}
+							}
+						}
+					}
+				}
+				DocumentFile.fromTreeUri(context, uri)?.let { userDir ->
+					copyRecursively(userDir, context.externalFilesDir.toPath())
+				}
+			}
+		}
+		OutlinedButton({
+			openDocumentLauncher.launch(null)
+		}) {
+			Text("Import Files")
 		}
 
 		val debugTextPath = remember { context.externalFilesDir.toPath() / "debug.txt" }
@@ -143,12 +197,12 @@ internal fun SettingsComposable(navController: NavController) {
 		}
 		OutlinedButton({
 			debugTextPath.writeText(debugText)
-		}, Modifier.fillMaxWidth()) {
-			Text("Save")
+		}) {
+			Text("Save Debug Text")
 		}
 		OutlinedTextField(debugText, {
 			debugText = it
-		}, Modifier.fillMaxWidth(),
+		},
 			label = { Text("Debug") },
 		)
 
@@ -161,9 +215,7 @@ internal fun SettingsComposable(navController: NavController) {
 		}
 		OutlinedTextField(testText, {
 			testText = it
-		}, Modifier
-			.fillMaxWidth()
-			.focusRequester(focusRequester),
+		}, Modifier.focusRequester(focusRequester),
 			label = { Text("Test") },
 		)
 	}
