@@ -27,6 +27,7 @@ import java.nio.channels.FileChannel
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import java.util.concurrent.TimeUnit
+import kotlin.io.path.createDirectories
 import kotlin.io.path.div
 import kotlin.io.path.exists
 import kotlin.io.path.readBytes
@@ -39,7 +40,7 @@ internal var vwinngjuanResourceDownloaded by mutableLongStateOf(0)
 
 private fun VwinngjuanIms.validateVwinngjuanResource(name: String) = run {
 	println("Validate $name")
-	val vwinngjuanFilesDir = externalFilesDir.toPath() / "vwinngjuan"
+	val vwinngjuanFilesDir = (externalFilesDir.toPath() / "vwinngjuan").createDirectories()
 	val vwinngjuanResourceURL = "https://381-03011-http.buhzzi.com/permitted/vwinngjuan/$name"
 	val filePath = vwinngjuanFilesDir / name
 	if (
