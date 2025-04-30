@@ -133,7 +133,28 @@ internal fun EnterKey(modifier: Modifier = Modifier) {
 	}
 }
 
+private var usingSpecials by mutableStateOf(false)
+
+@Composable
+private fun LatinSpecialsComposable() {
+	SpecialsComposable(remember { listOf(
+		SpecialsCategory("Small Form", buildList {
+			addAll(('﹐' .. '﹫').map { SpecialsItem(it) })
+		}),
+		SpecialsCategory("Letterlike", buildList {
+			addAll(('℀' .. '⅏').map { SpecialsItem(it) })
+		}),
+	) }) {
+		usingSpecials = false
+	}
+}
+
 internal val qwertyPlane: Plane = Plane({ stringResource(R.string.qwerty_plane) }) {
+	if (usingSpecials) {
+		LatinSpecialsComposable()
+		return@Plane
+	}
+
 	Column {
 		FunctionalKeysRow(Modifier.weight(1F))
 		Row(Modifier.weight(1F)) {
@@ -199,7 +220,9 @@ internal val qwertyPlane: Plane = Plane({ stringResource(R.string.qwerty_plane) 
 			ShiftKey(Modifier.weight(2F))
 			MetaKey(Modifier.weight(1F))
 			SpaceKey(Modifier.weight(4F))
-			SpecialsKey(latinSpecialsPlane, Modifier.weight(1F))
+			SpecialsKey(Modifier.weight(1F)) {
+				usingSpecials = true
+			}
 			EnterKey(Modifier.weight(2F))
 		}
 	}
@@ -216,6 +239,11 @@ internal fun FullwidthSpaceKey(modifier: Modifier = Modifier) {
 }
 
 internal val qwertyFullwidthPlane: Plane = Plane({ stringResource(R.string.qwerty_fullwidth_plane) }) {
+	if (usingSpecials) {
+		LatinSpecialsComposable()
+		return@Plane
+	}
+
 	Column {
 		FunctionalKeysRow(Modifier.weight(1F))
 		Row(Modifier.weight(1F)) {
@@ -281,19 +309,10 @@ internal val qwertyFullwidthPlane: Plane = Plane({ stringResource(R.string.qwert
 			ShiftKey(Modifier.weight(2F))
 			MetaKey(Modifier.weight(1F))
 			FullwidthSpaceKey(Modifier.weight(4F))
-			SpecialsKey(latinSpecialsPlane, Modifier.weight(1F))
+			SpecialsKey(Modifier.weight(1F)) {
+				usingSpecials = true
+			}
 			EnterKey(Modifier.weight(2F))
 		}
 	}
-}
-
-private val latinSpecialsPlane = Plane({ stringResource(R.string.latin_specials_plane) }) {
-	SpecialsComposable(remember { listOf(
-		SpecialsCategory("Small Form", buildList {
-			addAll(('﹐' .. '﹫').map { SpecialsItem(it) })
-		}),
-		SpecialsCategory("Letterlike", buildList {
-			addAll(('℀' .. '⅏').map { SpecialsItem(it) })
-		})
-	) })
 }

@@ -5,8 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.text.format.Formatter
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,7 +15,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -30,24 +27,19 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.documentfile.provider.DocumentFile
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.buhzzi.util.bigIntegerToString
 import com.buhzzi.util.getSha256Sum
 import com.buhzzi.vwinngjuanime.MainActivity
@@ -65,15 +57,11 @@ import com.buhzzi.vwinngjuanime.keyboards.latin.FullwidthSpaceKey
 import com.buhzzi.vwinngjuanime.keyboards.latin.MetaKey
 import com.buhzzi.vwinngjuanime.keyboards.latin.TabKey
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.nio.file.Path
-import kotlin.io.path.createParentDirectories
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.div
 import kotlin.io.path.exists
 import kotlin.io.path.name
-import kotlin.io.path.outputStream
 import kotlin.io.path.readBytes
 import kotlin.math.max
 import kotlin.system.exitProcess
@@ -295,6 +283,48 @@ private fun OptionsComposable() {
 	}
 }
 
+private var usingSpecials by mutableStateOf(false)
+
+@Composable
+private fun TzuihSpecialsComposable() {
+	CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+		SpecialsComposable(remember { listOf(
+			SpecialsCategory("注\n音", buildList {
+				addAll(('ㄅ' .. 'ㄯ').map { SpecialsItem(it) })
+				addAll(('ㆠ' .. 'ㆿ').map { SpecialsItem(it) })
+			}),
+			SpecialsCategory("僞\n康", buildList {
+				addAll(('⼀' .. '⿕').map { SpecialsItem(it) })
+			}),
+			SpecialsCategory("述\n字", buildList {
+				addAll(('⿰' .. '⿿').map { SpecialsItem(it) })
+				addAll(('〾' .. '〿').map { SpecialsItem(it) })
+			}),
+			SpecialsCategory("文\n法", buildList {
+				addAll(('　' .. '】').map { SpecialsItem(it) })
+				addAll(('〔' .. '〟').map { SpecialsItem(it) })
+				add(SpecialsItem('〰'))
+				addAll(('︰' .. '﹏').map { SpecialsItem(it) })
+			}),
+			SpecialsCategory("直\n書", buildList {
+				addAll(('︐' .. '︙').map { SpecialsItem(it) })
+			}),
+			SpecialsCategory("序\n號", buildList {
+				addAll(('㈠' .. '㍰').map { SpecialsItem(it) })
+				addAll(('㍺' .. '㍿').map { SpecialsItem(it) })
+				addAll(('㏠' .. '㏾').map { SpecialsItem(it) })
+			}),
+			SpecialsCategory("單\n位", buildList {
+				addAll(('㍱' .. '㍹').map { SpecialsItem(it) })
+				addAll(('㎀' .. '㏟').map { SpecialsItem(it) })
+				addAll(('㏿' .. '㏿').map { SpecialsItem(it) })
+			}),
+		) }) {
+			usingSpecials = false
+		}
+	}
+}
+
 private var updatingTzhuComposerTrigger by mutableIntStateOf(0x0)
 
 internal val vwinngjuanPlane = Plane({ stringResource(R.string.vwinngjuan_plane) },
@@ -320,6 +350,11 @@ internal val vwinngjuanPlane = Plane({ stringResource(R.string.vwinngjuan_plane)
 		}
 	}
 	val tzhuComposer = savedTzhuComposer
+
+	if (usingSpecials) {
+		TzuihSpecialsComposable()
+		return@Plane
+	}
 
 	if (usingTzuihSelector) {
 		if (tzhuComposer != null) SelectTzuihComposable(tzhuComposer)
@@ -438,45 +473,10 @@ internal val vwinngjuanPlane = Plane({ stringResource(R.string.vwinngjuan_plane)
 			}
 			MetaKey(Modifier.weight(1F))
 			FullwidthSpaceKey(Modifier.weight(4F))
-			SpecialsKey(tzuihSpecialsPlane, Modifier.weight(1F))
+			SpecialsKey(Modifier.weight(1F)) {
+				usingSpecials = true
+			}
 			EnterKey(Modifier.weight(2F))
 		}
-	}
-}
-
-private val tzuihSpecialsPlane = Plane({ stringResource(R.string.tzuih_specials_plane) }) {
-	CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-		SpecialsComposable(remember { listOf(
-			SpecialsCategory("注\n音", buildList {
-				addAll(('ㄅ' .. 'ㄯ').map { SpecialsItem(it) })
-				addAll(('ㆠ' .. 'ㆿ').map { SpecialsItem(it) })
-			}),
-			SpecialsCategory("僞\n康", buildList {
-				addAll(('⼀' .. '⿕').map { SpecialsItem(it) })
-			}),
-			SpecialsCategory("述\n字", buildList {
-				addAll(('⿰' .. '⿿').map { SpecialsItem(it) })
-				addAll(('〾' .. '〿').map { SpecialsItem(it) })
-			}),
-			SpecialsCategory("文\n法", buildList {
-				addAll(('　' .. '】').map { SpecialsItem(it) })
-				addAll(('〔' .. '〟').map { SpecialsItem(it) })
-				add(SpecialsItem('〰'))
-				addAll(('︰' .. '﹏').map { SpecialsItem(it) })
-			}),
-			SpecialsCategory("直\n書", buildList {
-				addAll(('︐' .. '︙').map { SpecialsItem(it) })
-			}),
-			SpecialsCategory("序\n號", buildList {
-				addAll(('㈠' .. '㍰').map { SpecialsItem(it) })
-				addAll(('㍺' .. '㍿').map { SpecialsItem(it) })
-				addAll(('㏠' .. '㏾').map { SpecialsItem(it) })
-			}),
-			SpecialsCategory("單\n位", buildList {
-				addAll(('㍱' .. '㍹').map { SpecialsItem(it) })
-				addAll(('㎀' .. '㏟').map { SpecialsItem(it) })
-				addAll(('㏿' .. '㏿').map { SpecialsItem(it) })
-			}),
-		) })
 	}
 }

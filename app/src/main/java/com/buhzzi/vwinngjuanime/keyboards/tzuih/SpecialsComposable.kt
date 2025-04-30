@@ -19,11 +19,8 @@ import androidx.compose.ui.unit.dp
 import com.buhzzi.vwinngjuanime.keyboards.KeyContent
 import com.buhzzi.vwinngjuanime.keyboards.OutlinedKey
 import com.buhzzi.vwinngjuanime.keyboards.OutlinedSpace
-import com.buhzzi.vwinngjuanime.keyboards.Plane
 import com.buhzzi.vwinngjuanime.keyboards.commitText
-import com.buhzzi.vwinngjuanime.keyboards.goToPlane
 import com.buhzzi.vwinngjuanime.keyboards.latin.BackspaceKey
-import com.buhzzi.vwinngjuanime.keyboards.planeGoBack
 
 internal data class SpecialsCategory(val label: String, val items: List<SpecialsItem>)
 
@@ -38,12 +35,12 @@ internal data class SpecialsItem(val label: String, val text: String) {
 }
 
 @Composable
-internal fun SpecialsKey(plane: Plane, modifier: Modifier = Modifier) {
+internal fun SpecialsKey(modifier: Modifier = Modifier, useSpecials: () -> Unit) {
 	OutlinedKey(
 		KeyContent(Icons.Filled.EmojiSymbols),
 		modifier,
 	) {
-		goToPlane(plane)
+		useSpecials()
 	}
 }
 
@@ -54,6 +51,7 @@ internal fun SpecialsComposable(
 	titleSize: Int = 0x40,
 	rowCount: Int = 0x4,
 	rowSize: Int = 0x40,
+	quitSpecials: () -> Unit,
 ) {
 	Column(modifier) {
 		var selectedCategory by remember { mutableStateOf(categories.first().items) }
@@ -62,7 +60,7 @@ internal fun SpecialsComposable(
 				KeyContent(Icons.AutoMirrored.Filled.ArrowBack),
 				Modifier.weight(1F),
 			) {
-				planeGoBack()
+				quitSpecials()
 			}
 			OutlinedSpace(Modifier.weight(5F)) {
 				LazyRow {
