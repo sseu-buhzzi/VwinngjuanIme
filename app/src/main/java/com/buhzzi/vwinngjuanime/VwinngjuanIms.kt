@@ -1,6 +1,8 @@
 package com.buhzzi.vwinngjuanime
 
+import android.content.BroadcastReceiver
 import android.content.Intent
+import android.content.IntentFilter
 import android.inputmethodservice.InputMethodService
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
@@ -23,6 +25,7 @@ import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.lifecycle.setViewTreeViewModelStoreOwner
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
@@ -89,7 +92,12 @@ internal class VwinngjuanIms : ComposeInputMethodService() {
 	override fun onDestroy() {
 		super.onDestroy()
 
-		instance = null
+		while (localBroadcastReceivers.isNotEmpty()) {
+			unregisterContextBroadcastReceiver(localBroadcastReceivers.last())
+		}
+		if (this === instance) {
+			instance = null
+		}
 	}
 
 	override fun onCreateInputComposeView() = ComposeView(this).apply {
@@ -138,6 +146,23 @@ internal class VwinngjuanIms : ComposeInputMethodService() {
 	var inputType by mutableIntStateOf(EditorInfo.TYPE_NULL)
 
 	var imeOptions by mutableIntStateOf(EditorInfo.IME_NULL)
+
+	private val localBroadcastReceivers = mutableListOf<BroadcastReceiver>()
+
+	fun registerContextBroadcastReceiver(receiver: BroadcastReceiver, filter: IntentFilter) {
+		if (receiver !in localBroadcastReceivers) {
+			LocalBroadcastManager.getInstance(this)
+				.registerReceiver(receiver, filter)
+			localBroadcastReceivers.add(receiver)
+		}
+	}
+
+	fun unregisterContextBroadcastReceiver(receiver: BroadcastReceiver) {
+		if (localBroadcastReceivers.remove(receiver)) {
+			LocalBroadcastManager.getInstance(this)
+				.unregisterReceiver(receiver)
+		}
+	}
 
 	companion object {
 		var instance: VwinngjuanIms? = null
