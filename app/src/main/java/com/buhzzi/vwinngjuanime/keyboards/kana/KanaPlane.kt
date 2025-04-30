@@ -29,6 +29,7 @@ import com.buhzzi.vwinngjuanime.keyboards.tzuih.SpecialsCategory
 import com.buhzzi.vwinngjuanime.keyboards.tzuih.SpecialsComposable
 import com.buhzzi.vwinngjuanime.keyboards.tzuih.SpecialsItem
 import com.buhzzi.vwinngjuanime.keyboards.tzuih.SpecialsKey
+import com.buhzzi.vwinngjuanime.keyboards.tzuih.usingSpecials
 
 private enum class KanaType {
 	HIRAGANA,
@@ -116,8 +117,6 @@ private fun ShiftKanaVariationKey(
 	}
 }
 
-private var usingSpecials by mutableStateOf(false)
-
 @Composable
 private fun KanaSpecialsComposable() {
 	CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
@@ -152,9 +151,7 @@ private fun KanaSpecialsComposable() {
 				addAll(('㎀' .. '㏟').map { SpecialsItem(it) })
 				addAll(('㏿' .. '㏿').map { SpecialsItem(it) })
 			}),
-		) }) {
-			usingSpecials = false
-		}
+		) })
 	}
 }
 
