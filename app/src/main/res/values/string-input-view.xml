@@ -10,11 +10,8 @@
 	<string name="clipboard_paste">置</string>
 	<string name="clipboard_backspace">退格</string>
 	<string name="qwerty_plane" translatable="false">QWERTY</string>
-	<string name="qwerty_fullwidth_plane">QWERTY 全</string>
-	<string name="latin_specials_plane">Latin 附</string>
+	<string name="qwerty_fullwidth_plane">QWERTY 全形</string>
 	<string name="vwinngjuan_plane">文字</string>
-	<string name="tzuih_specials_plane">文字 附</string>
 	<string name="kana_plane">假名</string>
-	<string name="kana_specials_plane">假名 附</string>
 	<string name="yazherty_plane" translatable="false">ЯЖЕРТЫ</string>
 </resources>

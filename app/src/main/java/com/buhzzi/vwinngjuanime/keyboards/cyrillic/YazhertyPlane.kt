@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardCapslock
-import androidx.compose.material.icons.filled.SpaceBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -81,7 +80,41 @@ private fun ShiftKey(modifier: Modifier = Modifier) {
 	}
 }
 
+private var usingSpecials by mutableStateOf(false)
+
+@Composable
+private fun CyrilSpecialsComposable() {
+	SpecialsComposable(remember { listOf(
+		SpecialsCategory("Supplement", buildList {
+			addAll(('Ԁ' .. 'ԯ').map { SpecialsItem(it) })
+		}),
+		SpecialsCategory("Ext-A", buildList {
+			addAll(('ⷠ' .. 'ⷿ').map { SpecialsItem.combining(it) })
+		}),
+		SpecialsCategory("Ext-B", buildList {
+			addAll(('Ꙁ' .. 'ꙮ').map { SpecialsItem(it) })
+			addAll(('꙯' .. 'ꙿ').map { SpecialsItem.combining(it) })
+			addAll(('Ꚁ' .. 'ꚝ').map { SpecialsItem(it) })
+			addAll(('ꚞ' .. 'ꚟ').map { SpecialsItem.combining(it) })
+		}),
+		SpecialsCategory("Ext-C", buildList {
+			addAll(('ᲀ' .. 'ᲊ').map { SpecialsItem.combining(it) })
+		}),
+		SpecialsCategory("Ext-D", buildList {
+			addAll(("𞀰".codePointAt(0x0) .. "𞁭".codePointAt(0x0)).map { SpecialsItem(it) })
+			add(SpecialsItem.combining("𞂏"))
+		}),
+	) }) {
+		usingSpecials = true
+	}
+}
+
 internal val yazhertyPlane: Plane = Plane({ stringResource(R.string.yazherty_plane) }) {
+	if (usingSpecials) {
+		CyrilSpecialsComposable()
+		return@Plane
+	}
+
 	Column {
 		FunctionalKeysRow(Modifier.weight(1F))
 		Row(Modifier.weight(1F)) {
@@ -147,42 +180,10 @@ internal val yazhertyPlane: Plane = Plane({ stringResource(R.string.yazherty_pla
 			ShiftKey(Modifier.weight(2F))
 			MetaKey(Modifier.weight(1F))
 			SpaceKey(Modifier.weight(4F))
-			SpecialsKey(latinSpecialsPlane, Modifier.weight(1F))
+			SpecialsKey(Modifier.weight(1F)) {
+				usingSpecials = true
+			}
 			EnterKey(Modifier.weight(2F))
 		}
 	}
-}
-
-@Composable
-internal fun FullwidthSpaceKey(modifier: Modifier = Modifier) {
-	OutlinedKey(
-		KeyContent(Icons.Filled.SpaceBar),
-		modifier,
-	) {
-		commitText("　")
-	}
-}
-
-private val latinSpecialsPlane = Plane({ stringResource(R.string.latin_specials_plane) }) {
-	SpecialsComposable(remember { listOf(
-		SpecialsCategory("Supplement", buildList {
-			addAll(('Ԁ' .. 'ԯ').map { SpecialsItem(it) })
-		}),
-		SpecialsCategory("Ext-A", buildList {
-			addAll(('ⷠ' .. 'ⷿ').map { SpecialsItem.combining(it) })
-		}),
-		SpecialsCategory("Ext-B", buildList {
-			addAll(('Ꙁ' .. 'ꙮ').map { SpecialsItem(it) })
-			addAll(('꙯' .. 'ꙿ').map { SpecialsItem.combining(it) })
-			addAll(('Ꚁ' .. 'ꚝ').map { SpecialsItem(it) })
-			addAll(('ꚞ' .. 'ꚟ').map { SpecialsItem.combining(it) })
-		}),
-		SpecialsCategory("Ext-C", buildList {
-			addAll(('ᲀ' .. 'ᲊ').map { SpecialsItem.combining(it) })
-		}),
-		SpecialsCategory("Ext-D", buildList {
-			addAll(("𞀰".codePointAt(0x0) .. "𞁭".codePointAt(0x0)).map { SpecialsItem(it) })
-			add(SpecialsItem.combining("𞂏"))
-		}),
-	) })
 }
