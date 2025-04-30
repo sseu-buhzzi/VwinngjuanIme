@@ -326,7 +326,6 @@ internal val vwinngjuanPlane = Plane({ stringResource(R.string.vwinngjuan_plane)
 					val vwinStack = tzhuComposer.vwinStack
 					val tzhuList = vwinStack.tzhuList
 					if (tzhuList.isEmpty()) {
-						LejKey('０', Modifier.weight(1F))
 						LejKey('１', Modifier.weight(1F))
 						LejKey('２', Modifier.weight(1F))
 						LejKey('３', Modifier.weight(1F))
@@ -336,6 +335,7 @@ internal val vwinngjuanPlane = Plane({ stringResource(R.string.vwinngjuan_plane)
 						LejKey('７', Modifier.weight(1F))
 						LejKey('８', Modifier.weight(1F))
 						LejKey('９', Modifier.weight(1F))
+						LejKey('０', Modifier.weight(1F))
 					} else {
 						val tzuihList = tzhuList.flatMap { tzhu -> tzhu.first.tzuihList }
 						val candidateNumber = 0xa
