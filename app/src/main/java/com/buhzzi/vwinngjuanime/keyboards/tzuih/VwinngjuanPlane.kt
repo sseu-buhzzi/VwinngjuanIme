@@ -283,7 +283,7 @@ private fun OptionsComposable() {
 	}
 }
 
-private var usingSpecials by mutableStateOf(false)
+internal var usingSpecials by mutableStateOf(false)
 
 @Composable
 private fun TzuihSpecialsComposable() {
@@ -319,9 +319,7 @@ private fun TzuihSpecialsComposable() {
 				addAll(('㎀' .. '㏟').map { SpecialsItem(it) })
 				addAll(('㏿' .. '㏿').map { SpecialsItem(it) })
 			}),
-		) }) {
-			usingSpecials = false
-		}
+		) })
 	}
 }
 
