@@ -116,7 +116,54 @@ private fun ShiftKanaVariationKey(
 	}
 }
 
+private var usingSpecials by mutableStateOf(false)
+
+@Composable
+private fun KanaSpecialsComposable() {
+	CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+		SpecialsComposable(remember { listOf(
+			SpecialsCategory("述\n字", buildList {
+				addAll(('⿰' .. '⿻').map { SpecialsItem(it) })
+				addAll(('〾' .. '〿').map { SpecialsItem(it) })
+			}),
+			SpecialsCategory("文\n法", buildList {
+				addAll(('　' .. '〠').map { SpecialsItem(it) })
+				add(SpecialsItem('〰'))
+				add(SpecialsItem('〶'))
+				addAll(('〻' .. '〽').map { SpecialsItem(it) })
+				addAll(('゛' .. 'ゞ').map { SpecialsItem(it) })
+				add(SpecialsItem.combining('゙'))
+				add(SpecialsItem.combining('゚'))
+				addAll(('゠' .. '゠').map { SpecialsItem(it) })
+				addAll(('・' .. 'ヾ').map { SpecialsItem(it) })
+			}),
+			SpecialsCategory("舊\n遣", buildList {
+				addAll(('〱' .. '〵').map { SpecialsItem(it) })
+				addAll(('ゟ' .. 'ゟ').map { SpecialsItem(it) })
+				addAll(('ヿ' .. 'ヿ').map { SpecialsItem(it) })
+			}),
+			SpecialsCategory("序\n號", buildList {
+				addAll(('㈠' .. '㍰').map { SpecialsItem(it) })
+				addAll(('㍺' .. '㍿').map { SpecialsItem(it) })
+				addAll(('㏠' .. '㏾').map { SpecialsItem(it) })
+			}),
+			SpecialsCategory("單\n位", buildList {
+				addAll(('㍱' .. '㍹').map { SpecialsItem(it) })
+				addAll(('㎀' .. '㏟').map { SpecialsItem(it) })
+				addAll(('㏿' .. '㏿').map { SpecialsItem(it) })
+			}),
+		) }) {
+			usingSpecials = false
+		}
+	}
+}
+
 internal val kanaPlane: Plane = Plane({ stringResource(R.string.kana_plane) }) {
+	if (usingSpecials) {
+		KanaSpecialsComposable()
+		return@Plane
+	}
+
 	Column {
 		FunctionalKeysRow(Modifier.weight(1F))
 		Row(Modifier.weight(1F)) {
@@ -431,45 +478,10 @@ internal val kanaPlane: Plane = Plane({ stringResource(R.string.kana_plane) }) {
 			)
 			MetaKey(Modifier.weight(1F))
 			FullwidthSpaceKey(Modifier.weight(4F))
-			SpecialsKey(kanaSpecialsPlane, Modifier.weight(1F))
+			SpecialsKey(Modifier.weight(1F)) {
+				usingSpecials = true
+			}
 			EnterKey(Modifier.weight(2F))
 		}
-	}
-}
-
-private val kanaSpecialsPlane = Plane({ stringResource(R.string.kana_specials_plane) }) {
-	CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-		SpecialsComposable(remember { listOf(
-			SpecialsCategory("述\n字", buildList {
-				addAll(('⿰' .. '⿻').map { SpecialsItem(it) })
-				addAll(('〾' .. '〿').map { SpecialsItem(it) })
-			}),
-			SpecialsCategory("文\n法", buildList {
-				addAll(('　' .. '〠').map { SpecialsItem(it) })
-				add(SpecialsItem('〰'))
-				add(SpecialsItem('〶'))
-				addAll(('〻' .. '〽').map { SpecialsItem(it) })
-				addAll(('゛' .. 'ゞ').map { SpecialsItem(it) })
-				add(SpecialsItem.combining('゙'))
-				add(SpecialsItem.combining('゚'))
-				addAll(('゠' .. '゠').map { SpecialsItem(it) })
-				addAll(('・' .. 'ヾ').map { SpecialsItem(it) })
-			}),
-			SpecialsCategory("舊\n遣", buildList {
-				addAll(('〱' .. '〵').map { SpecialsItem(it) })
-				addAll(('ゟ' .. 'ゟ').map { SpecialsItem(it) })
-				addAll(('ヿ' .. 'ヿ').map { SpecialsItem(it) })
-			}),
-			SpecialsCategory("序\n號", buildList {
-				addAll(('㈠' .. '㍰').map { SpecialsItem(it) })
-				addAll(('㍺' .. '㍿').map { SpecialsItem(it) })
-				addAll(('㏠' .. '㏾').map { SpecialsItem(it) })
-			}),
-			SpecialsCategory("單\n位", buildList {
-				addAll(('㍱' .. '㍹').map { SpecialsItem(it) })
-				addAll(('㎀' .. '㏟').map { SpecialsItem(it) })
-				addAll(('㏿' .. '㏿').map { SpecialsItem(it) })
-			}),
-		) })
 	}
 }
