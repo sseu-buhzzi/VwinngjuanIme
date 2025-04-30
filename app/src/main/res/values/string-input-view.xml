@@ -16,4 +16,5 @@
 	<string name="tzuih_specials_plane">文字 附</string>
 	<string name="kana_plane">假名</string>
 	<string name="kana_specials_plane">假名 附</string>
+	<string name="yazherty_plane" translatable="false">ЯЖЕРТЫ</string>
 </resources>
