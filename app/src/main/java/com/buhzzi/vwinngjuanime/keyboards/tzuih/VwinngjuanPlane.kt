@@ -1,6 +1,12 @@
 package com.buhzzi.vwinngjuanime.keyboards.tzuih
 
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.text.format.Formatter
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,6 +17,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -23,21 +30,27 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.documentfile.provider.DocumentFile
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.buhzzi.util.bigIntegerToString
 import com.buhzzi.util.getSha256Sum
+import com.buhzzi.vwinngjuanime.MainActivity
 import com.buhzzi.vwinngjuanime.R
 import com.buhzzi.vwinngjuanime.VwinngjuanIms
 import com.buhzzi.vwinngjuanime.externalFilesDir
@@ -52,11 +65,15 @@ import com.buhzzi.vwinngjuanime.keyboards.latin.FullwidthSpaceKey
 import com.buhzzi.vwinngjuanime.keyboards.latin.MetaKey
 import com.buhzzi.vwinngjuanime.keyboards.latin.TabKey
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.nio.file.Path
+import kotlin.io.path.createParentDirectories
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.div
 import kotlin.io.path.exists
 import kotlin.io.path.name
+import kotlin.io.path.outputStream
 import kotlin.io.path.readBytes
 import kotlin.math.max
 import kotlin.system.exitProcess
@@ -188,25 +205,45 @@ private fun SelectTzuihComposable(tzhuComposer: TzhuComposer) {
 
 private var usingOptions by mutableStateOf(false)
 
-private fun quitOptionsComposable() {
-	usingOptions = false
-}
-
-private fun deleteTzhuComposer() {
-	savedTzhuComposer = null
-	++updatingTzhuComposerTrigger
-}
-
-private fun deleteVwinngjuanFiles() {
-	VwinngjuanIms.instance?.externalFilesDir?.toPath()?.let { it / "vwinngjuan" }?.also { vwinngjuanDirPath ->
-		sequenceOf("lej.tsv", "tzhu-tree.bin").forEach {
-			(vwinngjuanDirPath / it).deleteIfExists()
-		}
-	}
-}
-
 @Composable
 private fun OptionsComposable() {
+	val ims = VwinngjuanIms.instanceMust
+
+	fun quitOptionsComposable() {
+		usingOptions = false
+	}
+
+	fun deleteTzhuComposer() {
+		savedTzhuComposer = null
+		++updatingTzhuComposerTrigger
+	}
+
+	fun deleteVwinngjuanFiles() {
+		VwinngjuanIms.instance?.externalFilesDir?.toPath()?.let { it / "vwinngjuan" }?.also { vwinngjuanDirPath ->
+			sequenceOf("lej.tsv", "tzhu-tree.bin").forEach {
+				(vwinngjuanDirPath / it).deleteIfExists()
+			}
+		}
+	}
+
+	val importFilesEndReceiver = remember { object : BroadcastReceiver() {
+		override fun onReceive(context: Context?, intent: Intent?) {
+			deleteTzhuComposer()
+		}
+	} }
+	LaunchedEffect(Unit) {
+		ims.registerContextBroadcastReceiver(
+			importFilesEndReceiver,
+			IntentFilter("com.buhzzi.vwinngjuanime.IMPORT_FILES_END"),
+		)
+	}
+	fun importFiles() {
+		ims.startActivity(Intent(ims, MainActivity::class.java)
+			.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+			.putExtra("import_files", true)
+		)
+	}
+
 	CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
 		Column {
 			OutlinedSpace(Modifier
@@ -239,6 +276,10 @@ private fun OptionsComposable() {
 				}
 				OutlinedKey(KeyContent("建\n樹"), Modifier.weight(1F)) {
 					deleteTzhuComposer()
+					quitOptionsComposable()
+				}
+				OutlinedKey(KeyContent("引\n入"), Modifier.weight(1F)) {
+					importFiles()
 					quitOptionsComposable()
 				}
 				OutlinedKey(KeyContent("下\n載"), Modifier.weight(1F)) {
