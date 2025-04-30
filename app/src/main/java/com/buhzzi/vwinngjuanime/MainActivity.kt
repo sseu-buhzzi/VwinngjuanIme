@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.provider.Settings
 import android.view.inputmethod.InputMethodManager
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -32,7 +31,6 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
@@ -44,10 +42,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.documentfile.provider.DocumentFile
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.nio.file.Path
@@ -58,13 +58,65 @@ import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
 internal class MainActivity : ComponentActivity() {
+	private val importFilesCoroutineScope = CoroutineScope(Dispatchers.IO)
+
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
+
+		if (intent.getBooleanExtra("import_files", false)) {
+			importFiles {
+				LocalBroadcastManager.getInstance(this)
+					.sendBroadcast(Intent("com.buhzzi.vwinngjuanime.IMPORT_FILES_END"))
+				finish()
+			}
+			return
+		}
+
+		instance = this
 
 		setContent {
 			MainComposable()
 		}
 	}
+
+	override fun onDestroy() {
+		super.onDestroy()
+
+		if (this === instance) {
+			instance = null
+		}
+	}
+
+	private fun importFilesCopyRecursively(srcFile: DocumentFile, dstPath: Path) {
+		when {
+			srcFile.isDirectory -> {
+				dstPath.createParentDirectories()
+				srcFile.listFiles().forEach { srcSubFile ->
+					srcSubFile.name?.let { importFilesCopyRecursively(srcSubFile, dstPath / it) }
+				}
+			}
+			srcFile.isFile -> {
+				contentResolver.openInputStream(srcFile.uri)?.use { `in` ->
+					dstPath.outputStream().use { out ->
+						`in`.copyTo(out)
+					}
+				}
+			}
+		}
+	}
+
+	inline fun importFiles(crossinline callback: () -> Unit = { }) = registerForActivityResult(
+		ActivityResultContracts.OpenDocumentTree()
+	) { uri ->
+		if (uri != null) {
+			importFilesCoroutineScope.launch(Dispatchers.IO) {
+				DocumentFile.fromTreeUri(this@MainActivity, uri)?.let { userDir ->
+					importFilesCopyRecursively(userDir, externalFilesDir.toPath())
+				}
+			}
+			callback()
+		}
+	}.launch(null)
 
 	companion object {
 		var instance: MainActivity? = null
@@ -129,7 +181,7 @@ internal fun ThemeWrapComposable(content: @Composable () -> Unit) {
 
 @Composable
 internal fun SettingsComposable(navController: NavController) {
-	val context = LocalContext.current
+	val activity = MainActivity.instanceMust
 	Column(Modifier
 		.safeDrawingPadding()
 		.fillMaxSize(),
@@ -137,60 +189,32 @@ internal fun SettingsComposable(navController: NavController) {
 		Alignment.CenterHorizontally,
 	) {
 		OutlinedButton({
-			context.startActivity(Intent(Settings.ACTION_INPUT_METHOD_SETTINGS)
+			activity.startActivity(Intent(Settings.ACTION_INPUT_METHOD_SETTINGS)
 				.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 			)
 		}) {
 			Text("Input Method Settings")
 		}
 		OutlinedButton({
-			context.startActivity(Intent(Settings.ACTION_INPUT_METHOD_SUBTYPE_SETTINGS)
+			activity.startActivity(Intent(Settings.ACTION_INPUT_METHOD_SUBTYPE_SETTINGS)
 				.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 			)
 		}) {
 			Text("Input Method Subtype Settings")
 		}
 		OutlinedButton({
-			context.getSystemService(InputMethodManager::class.java).showInputMethodPicker()
+			activity.getSystemService(InputMethodManager::class.java).showInputMethodPicker()
 		}) {
 			Text("Show Input Method Picker")
 		}
-		fun importFilesCopyRecursively(srcFile: DocumentFile, dstPath: Path) {
-			when {
-				srcFile.isDirectory -> {
-					dstPath.createParentDirectories()
-					srcFile.listFiles().forEach { srcSubFile ->
-						srcSubFile.name?.let { importFilesCopyRecursively(srcSubFile, dstPath / it) }
-					}
-				}
-				srcFile.isFile -> {
-					context.contentResolver.openInputStream(srcFile.uri)?.use { `in` ->
-						dstPath.outputStream().use { out ->
-							`in`.copyTo(out)
-						}
-					}
-				}
-			}
-		}
-		val importFilesCoroutineScope = rememberCoroutineScope()
-		val importFilesOpenDocumentLauncher = rememberLauncherForActivityResult(
-			ActivityResultContracts.OpenDocumentTree()
-		) { uri ->
-			if (uri != null) {
-				importFilesCoroutineScope.launch(Dispatchers.IO) {
-					DocumentFile.fromTreeUri(context, uri)?.let { userDir ->
-						importFilesCopyRecursively(userDir, context.externalFilesDir.toPath())
-					}
-				}
-			}
-		}
+
 		OutlinedButton({
-			importFilesOpenDocumentLauncher.launch(null)
+			activity.importFiles()
 		}) {
 			Text("Import Files")
 		}
 
-		val debugTextPath = remember { context.externalFilesDir.toPath() / "debug.txt" }
+		val debugTextPath = remember { activity.externalFilesDir.toPath() / "debug.txt" }
 		var debugText by remember { mutableStateOf(runCatching {
 			debugTextPath.readText()
 		}.getOrElse { "" }) }
