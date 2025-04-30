@@ -450,8 +450,8 @@ private val kanaSpecialsPlane = Plane({ stringResource(R.string.kana_specials_pl
 				add(SpecialsItem('〶'))
 				addAll(('〻' .. '〽').map { SpecialsItem(it) })
 				addAll(('゛' .. 'ゞ').map { SpecialsItem(it) })
-				add(SpecialsItem("◌゙", "゙"))
-				add(SpecialsItem("◌゚", "゚"))
+				add(SpecialsItem.combining('゙'))
+				add(SpecialsItem.combining('゚'))
 				addAll(('゠' .. '゠').map { SpecialsItem(it) })
 				addAll(('・' .. 'ヾ').map { SpecialsItem(it) })
 			}),

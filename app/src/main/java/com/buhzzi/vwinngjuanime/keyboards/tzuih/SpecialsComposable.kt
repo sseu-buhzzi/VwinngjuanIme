@@ -30,6 +30,11 @@ internal data class SpecialsCategory(val label: String, val items: List<Specials
 internal data class SpecialsItem(val label: String, val text: String) {
 	constructor(text: String) : this(text, text)
 	constructor(text: Char) : this(text.toString())
+	constructor(text: Int) : this(String(intArrayOf(text), 0x0, 0x1))
+
+	companion object {
+		fun combining(text: Any) = SpecialsItem("◌$text")
+	}
 }
 
 @Composable

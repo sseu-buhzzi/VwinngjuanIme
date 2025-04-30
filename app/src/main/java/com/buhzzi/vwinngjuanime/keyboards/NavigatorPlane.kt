@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import com.buhzzi.vwinngjuanime.R
 import com.buhzzi.vwinngjuanime.VwinngjuanIms
+import com.buhzzi.vwinngjuanime.keyboards.cyrillic.yazhertyPlane
 import com.buhzzi.vwinngjuanime.keyboards.editor.clipboardPlane
 import com.buhzzi.vwinngjuanime.keyboards.editor.editorPlane
 import com.buhzzi.vwinngjuanime.keyboards.kana.kanaPlane
@@ -173,6 +174,9 @@ internal val vwinngjuanPlaneIcon
 internal val kanaPlaneIcon
 	get() = Icons.Filled.Keyboard
 
+internal val yazhertyPlaneIcon
+	get() = Icons.Filled.Keyboard
+
 internal val navigatorPlane: Plane = Plane({ stringResource(R.string.navigator_plane) }) {
 	Column(Modifier) {
 		Row(Modifier.weight(3F)) {
@@ -185,6 +189,9 @@ internal val navigatorPlane: Plane = Plane({ stringResource(R.string.navigator_p
 			}
 			Column(Modifier.weight(1F)) {
 				NavigatorKey(kanaPlane, kanaPlaneIcon, Modifier.weight(1F))
+			}
+			Column(Modifier.weight(1F)) {
+				NavigatorKey(yazhertyPlane, yazhertyPlaneIcon, Modifier.weight(1F))
 			}
 		}
 		Row(Modifier.weight(1F)) {
