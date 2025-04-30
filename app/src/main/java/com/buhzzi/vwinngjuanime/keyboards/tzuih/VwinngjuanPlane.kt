@@ -5,6 +5,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.text.format.Formatter
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,11 +37,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastMap
 import com.buhzzi.util.bigIntegerToString
 import com.buhzzi.util.getSha256Sum
 import com.buhzzi.vwinngjuanime.MainActivity
@@ -411,12 +415,17 @@ internal val vwinngjuanPlane = Plane({ stringResource(R.string.vwinngjuan_plane)
 						LejKey('９', Modifier.weight(1F))
 						LejKey('０', Modifier.weight(1F))
 					} else {
-						val tzuihList = tzhuList.flatMap { tzhu -> tzhu.first.tzuihList }
+						val tzuihList = tzhuList.flatMapIndexed { index, tzhu ->
+							val color = Color.hsl(index * 360F / tzhuList.size, 0.5F, 0.5F)
+							tzhu.first.tzuihList.fastMap { color to it }
+						}
 						val candidateNumber = 0xa
 						val leadingSpacesNumber = max(candidateNumber - tzuihList.size, 0x0) / 0x2
 						for (tzuihIndex in 0x0 ..< candidateNumber) {
-							tzuihList.getOrNull(tzuihIndex - leadingSpacesNumber)?.let { tzuih ->
-								OutlinedKey(KeyContent(tzuih), Modifier.weight(1F)) {
+							tzuihList.getOrNull(tzuihIndex - leadingSpacesNumber)?.let { (color, tzuih) ->
+								OutlinedKey(KeyContent(tzuih), Modifier.weight(1F)
+									.border(0x1.dp, color),
+								) {
 									commitText(tzuih)
 									vwinStack.clear()
 								}
