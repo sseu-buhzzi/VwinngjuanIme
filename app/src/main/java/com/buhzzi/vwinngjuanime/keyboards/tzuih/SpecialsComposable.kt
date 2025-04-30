@@ -51,7 +51,6 @@ internal fun SpecialsComposable(
 	titleSize: Int = 0x40,
 	rowCount: Int = 0x4,
 	rowSize: Int = 0x40,
-	quitSpecials: () -> Unit,
 ) {
 	Column(modifier) {
 		var selectedCategory by remember { mutableStateOf(categories.first().items) }
@@ -60,7 +59,7 @@ internal fun SpecialsComposable(
 				KeyContent(Icons.AutoMirrored.Filled.ArrowBack),
 				Modifier.weight(1F),
 			) {
-				quitSpecials()
+				usingSpecials = false
 			}
 			OutlinedSpace(Modifier.weight(5F)) {
 				LazyRow {

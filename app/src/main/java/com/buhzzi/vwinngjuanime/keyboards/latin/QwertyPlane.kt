@@ -32,6 +32,7 @@ import com.buhzzi.vwinngjuanime.keyboards.tzuih.SpecialsCategory
 import com.buhzzi.vwinngjuanime.keyboards.tzuih.SpecialsComposable
 import com.buhzzi.vwinngjuanime.keyboards.tzuih.SpecialsItem
 import com.buhzzi.vwinngjuanime.keyboards.tzuih.SpecialsKey
+import com.buhzzi.vwinngjuanime.keyboards.tzuih.usingSpecials
 
 private enum class LatinKeySet {
 	LOWERCASE,
@@ -133,8 +134,6 @@ internal fun EnterKey(modifier: Modifier = Modifier) {
 	}
 }
 
-private var usingSpecials by mutableStateOf(false)
-
 @Composable
 private fun LatinSpecialsComposable() {
 	SpecialsComposable(remember { listOf(
@@ -144,9 +143,7 @@ private fun LatinSpecialsComposable() {
 		SpecialsCategory("Letterlike", buildList {
 			addAll(('℀' .. '⅏').map { SpecialsItem(it) })
 		}),
-	) }) {
-		usingSpecials = false
-	}
+	) })
 }
 
 internal val qwertyPlane: Plane = Plane({ stringResource(R.string.qwerty_plane) }) {

@@ -29,6 +29,7 @@ import com.buhzzi.vwinngjuanime.keyboards.tzuih.SpecialsCategory
 import com.buhzzi.vwinngjuanime.keyboards.tzuih.SpecialsComposable
 import com.buhzzi.vwinngjuanime.keyboards.tzuih.SpecialsItem
 import com.buhzzi.vwinngjuanime.keyboards.tzuih.SpecialsKey
+import com.buhzzi.vwinngjuanime.keyboards.tzuih.usingSpecials
 
 private enum class CyrilKeySet {
 	LOWERCASE,
@@ -80,8 +81,6 @@ private fun ShiftKey(modifier: Modifier = Modifier) {
 	}
 }
 
-private var usingSpecials by mutableStateOf(false)
-
 @Composable
 private fun CyrilSpecialsComposable() {
 	SpecialsComposable(remember { listOf(
@@ -104,9 +103,7 @@ private fun CyrilSpecialsComposable() {
 			addAll(("𞀰".codePointAt(0x0) .. "𞁭".codePointAt(0x0)).map { SpecialsItem(it) })
 			add(SpecialsItem.combining("𞂏"))
 		}),
-	) }) {
-		usingSpecials = true
-	}
+	) })
 }
 
 internal val yazhertyPlane: Plane = Plane({ stringResource(R.string.yazherty_plane) }) {
