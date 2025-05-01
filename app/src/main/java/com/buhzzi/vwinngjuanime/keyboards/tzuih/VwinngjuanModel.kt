@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.util.fastJoinToString
+import androidx.compose.ui.util.fastMap
 import androidx.compose.ui.util.fastMapNotNull
 import com.buhzzi.util.bigIntegerToString
 import com.buhzzi.util.getSha256Sum
@@ -291,9 +292,9 @@ internal class TzhuComposer {
 	val fullVwinList = lejDataMap.mapNotNull { (keyTableLabel, vwinDataList) ->
 		keyTableLabel?.let {
 			vwinDataList.fastMapNotNull { (keyLabel, _) ->
-				keyLabel?.let { vwinLabel ->
-					VwinInfo(vwinLabel, druannMap[vwinLabel])
-				}
+				keyLabel
+			}.distinct().fastMap { vwinLabel ->
+				VwinInfo(vwinLabel, druannMap[vwinLabel])
 			}
 		}
 	}.flatten()
