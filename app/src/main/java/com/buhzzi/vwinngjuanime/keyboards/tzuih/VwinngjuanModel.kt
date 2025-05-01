@@ -43,8 +43,11 @@ private fun VwinngjuanIms.validateVwinngjuanResource(name: String) = run {
 	println("Validate $name")
 	val vwinngjuanFilesDir = (externalFilesDir.toPath() / "vwinngjuan").createDirectories()
 	val vwinngjuanResourceURL = "https://381-03011-http.buhzzi.com/permitted/vwinngjuan/$name"
+	val networkThrottling = (externalFilesDir.toPath() / "vwinngjuan" / "network_throttling.lck").exists()
 	val filePath = vwinngjuanFilesDir / name
-	if (
+	if (networkThrottling) {
+		println("Under network throttling. Unable to download.")
+	} else if (
 		filePath.exists() &&
 		run {
 			val hashPath = vwinngjuanFilesDir / "$name.sha256"
