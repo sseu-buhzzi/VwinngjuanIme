@@ -62,6 +62,9 @@ import com.buhzzi.vwinngjuanime.keyboards.latin.MetaKey
 import com.buhzzi.vwinngjuanime.keyboards.latin.TabKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlin.io.path.createFile
+import kotlin.io.path.createParentDirectories
+import kotlin.io.path.deleteExisting
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.div
 import kotlin.io.path.exists
@@ -211,10 +214,9 @@ private fun OptionsComposable() {
 	}
 
 	fun deleteVwinngjuanFiles() {
-		VwinngjuanIms.instance?.externalFilesDir?.toPath()?.let { it / "vwinngjuan" }?.also { vwinngjuanDirPath ->
-			sequenceOf("lej.tsv", "tzhu-tree.bin").forEach {
-				(vwinngjuanDirPath / it).deleteIfExists()
-			}
+		val vwinngjuanDirPath = ims.externalFilesDir.toPath() / "vwinngjuan"
+		sequenceOf("lej.tsv", "tzhu-tree.bin").forEach {
+			(vwinngjuanDirPath / it).deleteIfExists()
 		}
 	}
 
@@ -234,6 +236,16 @@ private fun OptionsComposable() {
 			.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 			.putExtra("import_files", true)
 		)
+	}
+
+	val networkThrottlingPath = ims.externalFilesDir.toPath() / "vwinngjuan" / "network_throttling.lck"
+	val networkThrottling = remember { networkThrottlingPath.exists() }
+	fun toggleNetworkThrottling() {
+		if (networkThrottling) {
+			networkThrottlingPath.deleteIfExists()
+		} else {
+			networkThrottlingPath.createParentDirectories().createFile()
+		}
 	}
 
 	CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
@@ -281,6 +293,14 @@ private fun OptionsComposable() {
 				}
 				OutlinedKey(KeyContent("終\n止"), Modifier.weight(1F)) {
 					exitProcess(0x0)
+				}
+				OutlinedKey(KeyContent("斷\n冈"), Modifier.weight(1F).run { if (networkThrottling) {
+					border(0x1.dp, Color.hsl(0F, 0F, 0.5F))
+				} else {
+					this
+				} }) {
+					toggleNetworkThrottling()
+					quitOptionsComposable()
 				}
 			}
 		}
