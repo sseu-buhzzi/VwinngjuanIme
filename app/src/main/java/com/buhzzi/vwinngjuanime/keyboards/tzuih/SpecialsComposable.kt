@@ -30,7 +30,7 @@ internal data class SpecialsItem(val label: String, val text: String) {
 	constructor(text: Int) : this(String(intArrayOf(text), 0x0, 0x1))
 
 	companion object {
-		fun combining(text: Any) = SpecialsItem("◌$text")
+		fun combining(text: Any) = SpecialsItem("◌$text", text.toString())
 	}
 }
 
