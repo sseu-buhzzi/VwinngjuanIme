@@ -499,7 +499,7 @@ internal val druannMap = mapOf<String, (PathBuilder.() -> Unit)>(
 		quadToRelative(4F, 0F, 4F, -4F)
 		reflectiveQuadToRelative(-4F, -4F)
 	},
-	"𠔾" to {
+	"𠂂" to {
 		moveTo(4F, 28F)
 		curveTo(16F, 28F, 16F, 16F, 12F, 16F)
 		reflectiveCurveToRelative(-8F, -8F, 4F, -8F)
@@ -509,7 +509,7 @@ internal val druannMap = mapOf<String, (PathBuilder.() -> Unit)>(
 		verticalLineToRelative(4F)
 		moveTo(4F, 20F)
 		horizontalLineTo(28F)
-	}, // TODO 𠔾
+	}, // TODO 𠂂
 	"肉" to {
 		moveTo(4F, 28F)
 		verticalLineTo(12F)
