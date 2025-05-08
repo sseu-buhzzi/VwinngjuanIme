@@ -13,13 +13,21 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedButton
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Scaffold
 import androidx.compose.material.ScaffoldState
 import androidx.compose.material.Text
+import androidx.compose.material.TextField
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
 import androidx.compose.material.rememberScaffoldState
@@ -41,6 +49,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastJoinToString
 import androidx.documentfile.provider.DocumentFile
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.navigation.NavController
@@ -51,6 +63,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.nio.file.Path
+import kotlin.io.path.appendText
 import kotlin.io.path.createParentDirectories
 import kotlin.io.path.div
 import kotlin.io.path.outputStream
@@ -59,6 +72,20 @@ import kotlin.io.path.writeText
 
 internal class MainActivity : ComponentActivity() {
 	private val importFilesCoroutineScope = CoroutineScope(Dispatchers.IO)
+	private var importFilesCallback: (() -> Unit)? = null
+	private val importFilesLauncher = registerForActivityResult(
+		ActivityResultContracts.OpenDocumentTree(),
+	) { uri ->
+		if (uri != null) {
+			importFilesCoroutineScope.launch(Dispatchers.IO) {
+				DocumentFile.fromTreeUri(this@MainActivity, uri)?.let { userDir ->
+					importFilesCopyRecursively(userDir, externalFilesDir.toPath())
+				}
+			}
+			importFilesCallback?.invoke()
+			importFilesCallback = null
+		}
+	}
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -105,18 +132,10 @@ internal class MainActivity : ComponentActivity() {
 		}
 	}
 
-	inline fun importFiles(crossinline callback: () -> Unit = { }) = registerForActivityResult(
-		ActivityResultContracts.OpenDocumentTree()
-	) { uri ->
-		if (uri != null) {
-			importFilesCoroutineScope.launch(Dispatchers.IO) {
-				DocumentFile.fromTreeUri(this@MainActivity, uri)?.let { userDir ->
-					importFilesCopyRecursively(userDir, externalFilesDir.toPath())
-				}
-			}
-			callback()
-		}
-	}.launch(null)
+	fun importFiles(callback: () -> Unit = { }) {
+		importFilesCallback = callback
+		importFilesLauncher.launch(null)
+	}
 
 	companion object {
 		var instance: MainActivity? = null
@@ -215,37 +234,44 @@ internal fun SettingsComposable(navController: NavController) {
 		}
 
 		val debugTextPath = remember { activity.externalFilesDir.toPath() / "debug.txt" }
-		var debugText by remember { mutableStateOf(runCatching {
+		fun readDebugTextLines() = runCatching {
 			debugTextPath.readText()
-		}.getOrElse { "" }) }
-		DisposableEffect(Unit) {
-			onDispose {
-				debugTextPath.writeText(debugText)
+		}.getOrNull()?.split('\n') ?: listOf()
+		var debugTextLines by remember { mutableStateOf(readDebugTextLines()) }
+		val debugLazyColumnState = rememberLazyListState()
+		LaunchedEffect(debugTextLines) {
+			debugLazyColumnState.scrollToItem(debugTextLines.lastIndex)
+		}
+		LazyColumn(Modifier.heightIn(Dp.Unspecified, 0x80.dp),
+			state = debugLazyColumnState,
+		) {
+			items(debugTextLines) { line ->
+				TextField(line, { }, Modifier.fillMaxWidth(),
+					textStyle = LocalTextStyle.current.copy(
+						textAlign = TextAlign.Center,
+					),
+				)
 			}
 		}
-		OutlinedButton({
-			debugTextPath.writeText(debugText)
-		}) {
-			Text("Save Debug Text")
-		}
-		OutlinedTextField(debugText, {
-			debugText = it
-		},
-			label = { Text("Debug") },
-		)
 
 		val focusRequester = FocusRequester()
 		val keyboardController = LocalSoftwareKeyboardController.current
-		var testText by remember { mutableStateOf("") }
 		LaunchedEffect(Unit) {
 			focusRequester.requestFocus()
 			keyboardController?.show()
 		}
+		var testText by remember { mutableStateOf("") }
 		OutlinedTextField(testText, {
 			testText = it
 		}, Modifier.focusRequester(focusRequester),
 			label = { Text("Test") },
 		)
+		OutlinedButton({
+			debugTextPath.appendText(testText)
+			debugTextLines = readDebugTextLines()
+		}) {
+			Text("Save Test Text")
+		}
 	}
 }
 
