@@ -269,6 +269,7 @@ internal fun SettingsComposable(navController: NavController) {
 		OutlinedButton({
 			debugTextPath.appendText(testText)
 			debugTextLines = readDebugTextLines()
+			testText = ""
 		}) {
 			Text("Save Test Text")
 		}
