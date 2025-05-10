@@ -69,6 +69,7 @@ import kotlin.io.path.div
 import kotlin.io.path.outputStream
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
+import kotlin.math.max
 
 internal class MainActivity : ComponentActivity() {
 	private val importFilesCoroutineScope = CoroutineScope(Dispatchers.IO)
@@ -240,7 +241,9 @@ internal fun SettingsComposable(navController: NavController) {
 		var debugTextLines by remember { mutableStateOf(readDebugTextLines()) }
 		val debugLazyColumnState = rememberLazyListState()
 		LaunchedEffect(debugTextLines) {
-			debugLazyColumnState.scrollToItem(debugTextLines.lastIndex)
+			if (debugTextLines.isNotEmpty()) {
+				debugLazyColumnState.scrollToItem(debugTextLines.lastIndex)
+			}
 		}
 		LazyColumn(Modifier.heightIn(Dp.Unspecified, 0x80.dp),
 			state = debugLazyColumnState,
