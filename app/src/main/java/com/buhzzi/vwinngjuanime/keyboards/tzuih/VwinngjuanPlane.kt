@@ -238,13 +238,13 @@ private fun OptionsComposable() {
 		)
 	}
 
-	val networkThrottlingPath = ims.externalFilesDir.toPath() / "vwinngjuan" / "network_throttling.lck"
-	val networkThrottling = remember { networkThrottlingPath.exists() }
+	val networkSyncingPath = ims.externalFilesDir.toPath() / "vwinngjuan" / "network_syncing.lck"
+	val networkSyncing = remember { networkSyncingPath.exists() }
 	fun toggleNetworkThrottling() {
-		if (networkThrottling) {
-			networkThrottlingPath.deleteIfExists()
+		if (networkSyncing) {
+			networkSyncingPath.deleteIfExists()
 		} else {
-			networkThrottlingPath.createParentDirectories().createFile()
+			networkSyncingPath.createParentDirectories().createFile()
 		}
 	}
 
@@ -294,10 +294,10 @@ private fun OptionsComposable() {
 				OutlinedKey(KeyContent("終\n止"), Modifier.weight(1F)) {
 					exitProcess(0x0)
 				}
-				OutlinedKey(KeyContent("斷\n冈"), Modifier.weight(1F).run { if (networkThrottling) {
-					border(0x1.dp, Color.hsl(0F, 0F, 0.5F))
-				} else {
+				OutlinedKey(KeyContent("斷\n冈"), Modifier.weight(1F).run { if (networkSyncing) {
 					this
+				} else {
+					border(0x1.dp, Color.hsl(0F, 0F, 0.5F))
 				} }) {
 					toggleNetworkThrottling()
 					quitOptionsComposable()
