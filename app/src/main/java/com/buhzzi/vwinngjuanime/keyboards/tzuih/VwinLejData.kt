@@ -14,12 +14,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.PathBuilder
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.buhzzi.vwinngjuanime.R
 
 internal class VwinInfo(
 	val label: String,
@@ -36,7 +33,6 @@ private fun PreviewedDruannIcon() {
 			Row(Modifier.weight(1F)) {
 				Icon(druannIcon(druann), null)
 				Text(vwin, style = TextStyle(
-					fontFamily = FontFamily(Font(R.font.gen_ryu_min2_tc_b)),
 					fontSize = 0x8.sp
 				))
 			}
