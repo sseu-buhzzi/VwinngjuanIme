@@ -31,6 +31,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.io.path.createDirectories
 import kotlin.io.path.div
 import kotlin.io.path.exists
+import kotlin.io.path.outputStream
 import kotlin.io.path.readBytes
 import kotlin.io.path.useLines
 import kotlin.io.path.writeBytes
@@ -43,10 +44,15 @@ private fun VwinngjuanIms.validateVwinngjuanResource(name: String) = run {
 	println("Validate $name")
 	val vwinngjuanFilesDir = (externalFilesDir.toPath() / "vwinngjuan").createDirectories()
 	val vwinngjuanResourceURL = "https://381-03011-http.buhzzi.com/permitted/vwinngjuan/$name"
-	val networkThrottling = (externalFilesDir.toPath() / "vwinngjuan" / "network_throttling.lck").exists()
+	val networkSyncing = (externalFilesDir.toPath() / "vwinngjuan" / "network_syncing.lck").exists()
 	val filePath = vwinngjuanFilesDir / name
-	if (networkThrottling) {
+	if (!networkSyncing) {
 		println("Under network throttling. Unable to download.")
+		assets.open("vwinngjuan/$name").use { `in` ->
+			filePath.outputStream().use { out ->
+				`in`.copyTo(out)
+			}
+		}
 	} else if (
 		filePath.exists() &&
 		run {
