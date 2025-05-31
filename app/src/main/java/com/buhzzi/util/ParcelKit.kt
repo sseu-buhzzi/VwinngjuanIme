@@ -1,4 +1,4 @@
-package com.buhzzi.vwinngjuanime
+package com.buhzzi.util
 
 import android.os.Parcel
 import android.os.Parcelable
@@ -24,4 +24,3 @@ internal fun <T : Parcelable> Parcelable.Creator<T>.fromBytes(bytes: ByteArray) 
 	setDataPosition(0)
 	createFromParcel(this)
 }
-
