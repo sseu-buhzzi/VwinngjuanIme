@@ -22,13 +22,13 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Backspace
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.ContentCut
 import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardDoubleArrowLeft
 import androidx.compose.material.icons.filled.KeyboardDoubleArrowRight
@@ -139,7 +139,7 @@ private fun LeftKey(
 	modifier: Modifier = Modifier,
 ) {
 	OutlinedKey(
-		KeyContent(Icons.AutoMirrored.Filled.KeyboardArrowLeft),
+		KeyContent(Icons.Filled.KeyboardArrowLeft),
 		modifier,
 	) {
 		currentInputConnection?.applyCarets(carets) { (left, right) -> left - 0x1 to right - 0x1 }
