@@ -53,9 +53,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
+import com.buhzzi.util.fromBytes
+import com.buhzzi.util.toBytes
 import com.buhzzi.vwinngjuanime.R
 import com.buhzzi.vwinngjuanime.VwinngjuanIms
-import com.buhzzi.vwinngjuanime.fromBytes
 import com.buhzzi.vwinngjuanime.keyboards.ActionDoneKey
 import com.buhzzi.vwinngjuanime.keyboards.ActionGoKey
 import com.buhzzi.vwinngjuanime.keyboards.ActionNextKey
@@ -77,7 +78,6 @@ import com.buhzzi.vwinngjuanime.keyboards.goToPlane
 import com.buhzzi.vwinngjuanime.keyboards.navigatorPlane
 import com.buhzzi.vwinngjuanime.keyboards.navigatorPlaneIcon
 import com.buhzzi.vwinngjuanime.keyboards.planeGoBack
-import com.buhzzi.vwinngjuanime.toBytes
 import java.math.BigInteger
 
 private enum class Carets {
