@@ -103,8 +103,10 @@ internal class VwinngjuanIms : ComposeInputMethodService() {
 	override fun onCreateInputComposeView() = ComposeView(this).apply {
 		setContent {
 			ThemeWrapComposable {
-				Box(Modifier.height(0x180.dp)
-					.safeDrawingPadding(),
+				Box(
+					Modifier
+						.height(0x180.dp)
+						.safeDrawingPadding(),
 				) {
 					currentPlane.composableFunction()
 				}

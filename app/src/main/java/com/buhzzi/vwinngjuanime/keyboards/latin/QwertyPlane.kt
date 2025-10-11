@@ -136,14 +136,16 @@ internal fun EnterKey(modifier: Modifier = Modifier) {
 
 @Composable
 private fun LatinSpecialsComposable() {
-	SpecialsComposable(remember { listOf(
-		SpecialsCategory("Small Form", buildList {
-			addAll(('﹐' .. '﹫').map { SpecialsItem(it) })
-		}),
-		SpecialsCategory("Letterlike", buildList {
-			addAll(('℀' .. '⅏').map { SpecialsItem(it) })
-		}),
-	) })
+	SpecialsComposable(remember {
+		listOf(
+			SpecialsCategory("Small Form", buildList {
+				addAll(('﹐' .. '﹫').map { SpecialsItem(it) })
+			}),
+			SpecialsCategory("Letterlike", buildList {
+				addAll(('℀' .. '⅏').map { SpecialsItem(it) })
+			}),
+		)
+	})
 }
 
 internal val qwertyPlane: Plane = Plane({ stringResource(R.string.qwerty_plane) }) {
