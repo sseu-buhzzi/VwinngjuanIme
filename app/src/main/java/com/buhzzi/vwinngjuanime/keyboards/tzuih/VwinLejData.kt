@@ -32,9 +32,12 @@ private fun PreviewedDruannIcon() {
 		druannMap.forEach { (vwin, druann) ->
 			Row(Modifier.weight(1F)) {
 				Icon(druannIcon(druann), null)
-				Text(vwin, style = TextStyle(
-					fontSize = 0x8.sp
-				))
+				Text(
+					vwin,
+					style = TextStyle(
+						fontSize = 0x8.sp,
+					),
+				)
 			}
 		}
 	}
@@ -53,10 +56,6 @@ internal fun druannIcon(pathBuilder: PathBuilder.() -> Unit) = ImageVector.Build
 	strokeLineJoin = StrokeJoin.Round,
 	pathBuilder = pathBuilder,
 ).build()
-
-
-
-
 
 
 internal val druannMap = mapOf<String, (PathBuilder.() -> Unit)>(

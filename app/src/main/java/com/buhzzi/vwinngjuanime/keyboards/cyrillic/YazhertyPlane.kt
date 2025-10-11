@@ -83,27 +83,29 @@ private fun ShiftKey(modifier: Modifier = Modifier) {
 
 @Composable
 private fun CyrilSpecialsComposable() {
-	SpecialsComposable(remember { listOf(
-		SpecialsCategory("Supplement", buildList {
-			addAll(('Ԁ' .. 'ԯ').map { SpecialsItem(it) })
-		}),
-		SpecialsCategory("Ext-A", buildList {
-			addAll(('ⷠ' .. 'ⷿ').map { SpecialsItem.combining(it) })
-		}),
-		SpecialsCategory("Ext-B", buildList {
-			addAll(('Ꙁ' .. 'ꙮ').map { SpecialsItem(it) })
-			addAll(('꙯' .. 'ꙿ').map { SpecialsItem.combining(it) })
-			addAll(('Ꚁ' .. 'ꚝ').map { SpecialsItem(it) })
-			addAll(('ꚞ' .. 'ꚟ').map { SpecialsItem.combining(it) })
-		}),
-		SpecialsCategory("Ext-C", buildList {
-			addAll(('ᲀ' .. 'ᲊ').map { SpecialsItem.combining(it) })
-		}),
-		SpecialsCategory("Ext-D", buildList {
-			addAll(("𞀰".codePointAt(0x0) .. "𞁭".codePointAt(0x0)).map { SpecialsItem(it) })
-			add(SpecialsItem.combining("𞂏"))
-		}),
-	) })
+	SpecialsComposable(remember {
+		listOf(
+			SpecialsCategory("Supplement", buildList {
+				addAll(('Ԁ' .. 'ԯ').map { SpecialsItem(it) })
+			}),
+			SpecialsCategory("Ext-A", buildList {
+				addAll(('ⷠ' .. 'ⷿ').map { SpecialsItem.combining(it) })
+			}),
+			SpecialsCategory("Ext-B", buildList {
+				addAll(('Ꙁ' .. 'ꙮ').map { SpecialsItem(it) })
+				addAll(('꙯' .. 'ꙿ').map { SpecialsItem.combining(it) })
+				addAll(('Ꚁ' .. 'ꚝ').map { SpecialsItem(it) })
+				addAll(('ꚞ' .. 'ꚟ').map { SpecialsItem.combining(it) })
+			}),
+			SpecialsCategory("Ext-C", buildList {
+				addAll(('ᲀ' .. 'ᲊ').map { SpecialsItem.combining(it) })
+			}),
+			SpecialsCategory("Ext-D", buildList {
+				addAll(("𞀰".codePointAt(0x0) .. "𞁭".codePointAt(0x0)).map { SpecialsItem(it) })
+				add(SpecialsItem.combining("𞂏"))
+			}),
+		)
+	})
 }
 
 internal val yazhertyPlane: Plane = Plane({ stringResource(R.string.yazherty_plane) }) {

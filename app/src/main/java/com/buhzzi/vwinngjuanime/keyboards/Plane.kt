@@ -82,7 +82,7 @@ internal suspend fun AwaitPointerEventScope.timeoutPointerStatus(time: Long, mov
 
 private fun VwinngjuanIms.vibrate() {
 	getSystemService(Vibrator::class.java).vibrate(
-		VibrationEffect.createOneShot(0x40, 0xff)
+		VibrationEffect.createOneShot(0x40, 0xff),
 	)
 }
 
@@ -146,7 +146,7 @@ internal inline fun OutlinedKey(
 	OutlinedClickable(action, modifier, keysPointerInput, movedThreshold) {
 		Column(
 			verticalArrangement = Arrangement.Center,
-			horizontalAlignment = Alignment.CenterHorizontally
+			horizontalAlignment = Alignment.CenterHorizontally,
 		) {
 			content.apply {
 				icon?.also { Icon(it, desc) }

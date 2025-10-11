@@ -383,11 +383,14 @@ internal inline fun ClipDataRow(
 		) {
 			select()
 		}
-		OutlinedClickable({ commitText(text) }, Modifier.weight(1F),
-			movedThreshold = 0F
+		OutlinedClickable(
+			{ commitText(text) },
+			Modifier.weight(1F),
+			movedThreshold = 0F,
 		) {
 			Box(Modifier.fillMaxSize(), Alignment.CenterStart) {
-				Text(text,
+				Text(
+					text,
 					overflow = TextOverflow.Ellipsis,
 				)
 			}
@@ -420,8 +423,10 @@ internal inline fun SelectedClipDataRow(
 		}
 		OutlinedSpace(Modifier.weight(1F)) {
 			Box(Modifier.fillMaxSize(), Alignment.Center) {
-				Text("$clipIndex $clip\n$itemIndex ${clip.getItemAt(itemIndex)}", Modifier
-					.horizontalScroll(rememberScrollState()),
+				Text(
+					"$clipIndex $clip\n$itemIndex ${clip.getItemAt(itemIndex)}",
+					Modifier
+						.horizontalScroll(rememberScrollState()),
 				)
 			}
 		}
@@ -469,9 +474,11 @@ internal val clipboardPlane = Plane({ stringResource(R.string.clipboard_plane) }
 					val (clip, clipIndex, itemIndex) = itemTriple
 					if (itemOrder in selectedClipOrders) {
 						SelectedClipDataRow(clip, clipIndex, itemIndex, {
-							clip.run { List(itemCount) { i ->
-								takeIf { i != itemIndex }?.getItemAt(i)
-							} }
+							clip.run {
+								List(itemCount) { i ->
+									takeIf { i != itemIndex }?.getItemAt(i)
+								}
+							}
 								.asSequence().filterNotNull()
 								.iterator()
 								.apply {
