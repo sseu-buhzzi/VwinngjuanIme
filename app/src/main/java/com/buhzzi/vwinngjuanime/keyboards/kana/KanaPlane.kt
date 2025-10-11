@@ -66,6 +66,7 @@ private fun KanaKey(
 			KanaVariation.HANDAKU -> hiraganaHandakuDesc
 			KanaVariation.KOGAKI -> hiraganaKogakiDesc
 		}
+
 		KanaType.KATAKANA -> when (kanaVariation) {
 			KanaVariation.SEI -> katakanaSeiDesc
 			KanaVariation.DAKU -> katakanaDakuDesc
@@ -88,10 +89,12 @@ private fun ShiftKanaTypeKey(
 	modifier: Modifier = Modifier,
 ) {
 	OutlinedKey(
-		KeyContent(when (kanaType) {
-			KanaType.HIRAGANA -> "平"
-			KanaType.KATAKANA -> "片"
-		}.reversed()),
+		KeyContent(
+			when (kanaType) {
+				KanaType.HIRAGANA -> "平"
+				KanaType.KATAKANA -> "片"
+			}.reversed(),
+		),
 		modifier,
 		arrayOf(targetKanaType),
 	) {
@@ -105,12 +108,14 @@ private fun ShiftKanaVariationKey(
 	modifier: Modifier = Modifier,
 ) {
 	OutlinedKey(
-		KeyContent(when (targetKanaVariation) {
-			KanaVariation.SEI -> "清"
-			KanaVariation.DAKU -> "濁"
-			KanaVariation.HANDAKU -> "半濁"
-			KanaVariation.KOGAKI -> "小"
-		}.reversed()),
+		KeyContent(
+			when (targetKanaVariation) {
+				KanaVariation.SEI -> "清"
+				KanaVariation.DAKU -> "濁"
+				KanaVariation.HANDAKU -> "半濁"
+				KanaVariation.KOGAKI -> "小"
+			}.reversed(),
+		),
 		modifier,
 	) {
 		kanaVariation = targetKanaVariation
@@ -120,38 +125,40 @@ private fun ShiftKanaVariationKey(
 @Composable
 private fun KanaSpecialsComposable() {
 	CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-		SpecialsComposable(remember { listOf(
-			SpecialsCategory("述\n字", buildList {
-				addAll(('⿰' .. '⿻').map { SpecialsItem(it) })
-				addAll(('〾' .. '〿').map { SpecialsItem(it) })
-			}),
-			SpecialsCategory("文\n法", buildList {
-				addAll(('　' .. '〠').map { SpecialsItem(it) })
-				add(SpecialsItem('〰'))
-				add(SpecialsItem('〶'))
-				addAll(('〻' .. '〽').map { SpecialsItem(it) })
-				addAll(('゛' .. 'ゞ').map { SpecialsItem(it) })
-				add(SpecialsItem.combining('゙'))
-				add(SpecialsItem.combining('゚'))
-				addAll(('゠' .. '゠').map { SpecialsItem(it) })
-				addAll(('・' .. 'ヾ').map { SpecialsItem(it) })
-			}),
-			SpecialsCategory("舊\n遣", buildList {
-				addAll(('〱' .. '〵').map { SpecialsItem(it) })
-				addAll(('ゟ' .. 'ゟ').map { SpecialsItem(it) })
-				addAll(('ヿ' .. 'ヿ').map { SpecialsItem(it) })
-			}),
-			SpecialsCategory("序\n號", buildList {
-				addAll(('㈠' .. '㍰').map { SpecialsItem(it) })
-				addAll(('㍺' .. '㍿').map { SpecialsItem(it) })
-				addAll(('㏠' .. '㏾').map { SpecialsItem(it) })
-			}),
-			SpecialsCategory("單\n位", buildList {
-				addAll(('㍱' .. '㍹').map { SpecialsItem(it) })
-				addAll(('㎀' .. '㏟').map { SpecialsItem(it) })
-				addAll(('㏿' .. '㏿').map { SpecialsItem(it) })
-			}),
-		) })
+		SpecialsComposable(remember {
+			listOf(
+				SpecialsCategory("述\n字", buildList {
+					addAll(('⿰' .. '⿻').map { SpecialsItem(it) })
+					addAll(('〾' .. '〿').map { SpecialsItem(it) })
+				}),
+				SpecialsCategory("文\n法", buildList {
+					addAll(('　' .. '〠').map { SpecialsItem(it) })
+					add(SpecialsItem('〰'))
+					add(SpecialsItem('〶'))
+					addAll(('〻' .. '〽').map { SpecialsItem(it) })
+					addAll(('゛' .. 'ゞ').map { SpecialsItem(it) })
+					add(SpecialsItem.combining('゙'))
+					add(SpecialsItem.combining('゚'))
+					addAll(('゠' .. '゠').map { SpecialsItem(it) })
+					addAll(('・' .. 'ヾ').map { SpecialsItem(it) })
+				}),
+				SpecialsCategory("舊\n遣", buildList {
+					addAll(('〱' .. '〵').map { SpecialsItem(it) })
+					addAll(('ゟ' .. 'ゟ').map { SpecialsItem(it) })
+					addAll(('ヿ' .. 'ヿ').map { SpecialsItem(it) })
+				}),
+				SpecialsCategory("序\n號", buildList {
+					addAll(('㈠' .. '㍰').map { SpecialsItem(it) })
+					addAll(('㍺' .. '㍿').map { SpecialsItem(it) })
+					addAll(('㏠' .. '㏾').map { SpecialsItem(it) })
+				}),
+				SpecialsCategory("單\n位", buildList {
+					addAll(('㍱' .. '㍹').map { SpecialsItem(it) })
+					addAll(('㎀' .. '㏟').map { SpecialsItem(it) })
+					addAll(('㏿' .. '㏿').map { SpecialsItem(it) })
+				}),
+			)
+		})
 	}
 }
 
@@ -169,21 +176,29 @@ internal val kanaPlane: Plane = Plane({ stringResource(R.string.kana_plane) }) {
 				"ン", "ン", "ン", "𛅧",
 				Modifier.weight(1F),
 			)
-			ShiftKanaTypeKey(when (kanaType) {
-				KanaType.HIRAGANA -> KanaType.KATAKANA
-				KanaType.KATAKANA -> KanaType.HIRAGANA
-			}, Modifier.weight(1F))
+			ShiftKanaTypeKey(
+				when (kanaType) {
+					KanaType.HIRAGANA -> KanaType.KATAKANA
+					KanaType.KATAKANA -> KanaType.HIRAGANA
+				},
+				Modifier.weight(1F),
+			)
 			sequenceOf(
 				KanaVariation.SEI,
 				KanaVariation.DAKU,
 				KanaVariation.HANDAKU,
 				KanaVariation.KOGAKI,
 			).forEach {
-				ShiftKanaVariationKey(it, Modifier.weight(1F)
-					.run {
-						if (kanaVariation == it) border(0x1.dp, Color.hsl(0F, 0F, 0.5F))
-						else this
-					},
+				ShiftKanaVariationKey(
+					it,
+					Modifier.weight(1F)
+						.run {
+							if (kanaVariation == it) {
+								border(0x1.dp, Color.hsl(0F, 0F, 0.5F))
+							} else {
+								this
+							}
+						},
 				)
 			}
 			BackspaceKey(Modifier.weight(2F))

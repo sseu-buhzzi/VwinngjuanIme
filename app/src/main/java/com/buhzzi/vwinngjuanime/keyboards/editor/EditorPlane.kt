@@ -22,6 +22,8 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Backspace
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.ContentCut
@@ -139,7 +141,7 @@ private fun LeftKey(
 	modifier: Modifier = Modifier,
 ) {
 	OutlinedKey(
-		KeyContent(Icons.Filled.KeyboardArrowLeft),
+		KeyContent(Icons.AutoMirrored.Filled.KeyboardArrowLeft),
 		modifier,
 	) {
 		currentInputConnection?.applyCarets(carets) { (left, right) -> left - 0x1 to right - 0x1 }
@@ -151,7 +153,7 @@ private fun RightKey(
 	modifier: Modifier = Modifier,
 ) {
 	OutlinedKey(
-		KeyContent(Icons.Filled.KeyboardArrowRight),
+		KeyContent(Icons.AutoMirrored.Filled.KeyboardArrowRight),
 		modifier,
 	) {
 		currentInputConnection?.apply {
@@ -383,11 +385,14 @@ internal inline fun ClipDataRow(
 		) {
 			select()
 		}
-		OutlinedClickable({ commitText(text) }, Modifier.weight(1F),
-			movedThreshold = 0F
+		OutlinedClickable(
+			{ commitText(text) },
+			Modifier.weight(1F),
+			movedThreshold = 0F,
 		) {
 			Box(Modifier.fillMaxSize(), Alignment.CenterStart) {
-				Text(text,
+				Text(
+					text,
 					overflow = TextOverflow.Ellipsis,
 				)
 			}
@@ -420,8 +425,10 @@ internal inline fun SelectedClipDataRow(
 		}
 		OutlinedSpace(Modifier.weight(1F)) {
 			Box(Modifier.fillMaxSize(), Alignment.Center) {
-				Text("$clipIndex $clip\n$itemIndex ${clip.getItemAt(itemIndex)}", Modifier
-					.horizontalScroll(rememberScrollState()),
+				Text(
+					"$clipIndex $clip\n$itemIndex ${clip.getItemAt(itemIndex)}",
+					Modifier
+						.horizontalScroll(rememberScrollState()),
 				)
 			}
 		}
@@ -469,9 +476,11 @@ internal val clipboardPlane = Plane({ stringResource(R.string.clipboard_plane) }
 					val (clip, clipIndex, itemIndex) = itemTriple
 					if (itemOrder in selectedClipOrders) {
 						SelectedClipDataRow(clip, clipIndex, itemIndex, {
-							clip.run { List(itemCount) { i ->
-								takeIf { i != itemIndex }?.getItemAt(i)
-							} }
+							clip.run {
+								List(itemCount) { i ->
+									takeIf { i != itemIndex }?.getItemAt(i)
+								}
+							}
 								.asSequence().filterNotNull()
 								.iterator()
 								.apply {

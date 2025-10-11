@@ -118,6 +118,7 @@ internal class MainActivity : ComponentActivity() {
 					srcSubFile.name?.let { importFilesCopyRecursively(srcSubFile, dstPath / it) }
 				}
 			}
+
 			srcFile.isFile -> {
 				contentResolver.openInputStream(srcFile.uri)?.use { `in` ->
 					dstPath.outputStream().use { out ->
@@ -197,22 +198,25 @@ internal fun ThemeWrapComposable(content: @Composable () -> Unit) {
 @Composable
 internal fun SettingsComposable(navController: NavController) {
 	val activity = MainActivity.instanceMust
-	Column(Modifier
-		.safeDrawingPadding()
-		.fillMaxSize(),
-		Arrangement.Center,
-		Alignment.CenterHorizontally,
+	Column(
+		Modifier
+			.safeDrawingPadding()
+			.fillMaxSize(),
+		verticalArrangement = Arrangement.Center,
+		horizontalAlignment =Alignment.CenterHorizontally,
 	) {
 		OutlinedButton({
-			activity.startActivity(Intent(Settings.ACTION_INPUT_METHOD_SETTINGS)
-				.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+			activity.startActivity(
+				Intent(Settings.ACTION_INPUT_METHOD_SETTINGS)
+					.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
 			)
 		}) {
 			Text("Input Method Settings")
 		}
 		OutlinedButton({
-			activity.startActivity(Intent(Settings.ACTION_INPUT_METHOD_SUBTYPE_SETTINGS)
-				.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+			activity.startActivity(
+				Intent(Settings.ACTION_INPUT_METHOD_SUBTYPE_SETTINGS)
+					.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
 			)
 		}) {
 			Text("Input Method Subtype Settings")
@@ -233,6 +237,7 @@ internal fun SettingsComposable(navController: NavController) {
 		fun readDebugTextLines() = runCatching {
 			debugTextPath.readText()
 		}.getOrNull()?.split('\n') ?: listOf()
+
 		var debugTextLines by remember { mutableStateOf(readDebugTextLines()) }
 		val debugLazyColumnState = rememberLazyListState()
 		LaunchedEffect(debugTextLines) {
@@ -240,11 +245,13 @@ internal fun SettingsComposable(navController: NavController) {
 				debugLazyColumnState.scrollToItem(debugTextLines.lastIndex)
 			}
 		}
-		LazyColumn(Modifier.heightIn(Dp.Unspecified, 0x80.dp),
+		LazyColumn(
+			Modifier.heightIn(Dp.Unspecified, 0x80.dp),
 			state = debugLazyColumnState,
 		) {
 			items(debugTextLines) { line ->
-				TextField(line, { }, Modifier.fillMaxWidth(),
+				TextField(
+					line, { }, Modifier.fillMaxWidth(),
 					textStyle = LocalTextStyle.current.copy(
 						textAlign = TextAlign.Center,
 					),
@@ -259,9 +266,12 @@ internal fun SettingsComposable(navController: NavController) {
 			keyboardController?.show()
 		}
 		var testText by remember { mutableStateOf("") }
-		OutlinedTextField(testText, {
-			testText = it
-		}, Modifier.focusRequester(focusRequester),
+		OutlinedTextField(
+			testText,
+			{
+				testText = it
+			},
+			Modifier.focusRequester(focusRequester),
 			label = { Text("Test") },
 		)
 		OutlinedButton({
