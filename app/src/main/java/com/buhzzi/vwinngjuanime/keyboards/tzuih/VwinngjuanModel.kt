@@ -331,7 +331,7 @@ internal class TzhuComposer {
 				LejKeyContentAction(KeyContent("")) { }
 			} else {
 				LejKeyContentAction(druannMap[vwinLabel]?.let { KeyContent(druannIcon(it)) }
-					?: KeyContent(vwinLabel)
+					?: KeyContent(vwinLabel),
 				) {
 					vwinStack.push(fullVwinList[vwinCodeMap[vwinLabel]!!])
 					keyTable = lejKeyTable

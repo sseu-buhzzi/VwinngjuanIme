@@ -79,7 +79,7 @@ internal fun SpecialsComposable(
 		OutlinedSpace(Modifier.weight(4F)) {
 			LazyRow {
 				items(
-					selectedCategory.windowed(rowCount, rowCount, true).toList()
+					selectedCategory.windowed(rowCount, rowCount, true).toList(),
 				) { row ->
 					Column(Modifier.width(rowSize.dp)) {
 						row.forEach { (label, text) ->

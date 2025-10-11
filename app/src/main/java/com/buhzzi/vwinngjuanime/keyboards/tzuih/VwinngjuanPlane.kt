@@ -134,6 +134,7 @@ internal fun EnterKey(
 				commitText(vwinStack.buildTzuih())
 				vwinStack.clear()
 			}
+
 			else -> commitText("\n")
 		}
 	}
@@ -159,8 +160,11 @@ private fun SelectTzuihComposable(tzhuComposer: TzhuComposer) {
 				else OutlinedKey(KeyContent(Icons.AutoMirrored.Filled.NavigateBefore), Modifier.weight(1F)) {
 					--tzhuIndex
 				}
-				OutlinedKey(KeyContent(tzhuList[tzhuIndex].first.pathString), Modifier.weight(4F)
-					.horizontalScroll(rememberScrollState()),
+				OutlinedKey(
+					KeyContent(tzhuList[tzhuIndex].first.pathString),
+					Modifier
+						.weight(4F)
+						.horizontalScroll(rememberScrollState()),
 					movedThreshold = 0F,
 				) {
 					usingTzuihSelector = false
@@ -176,13 +180,16 @@ private fun SelectTzuihComposable(tzhuComposer: TzhuComposer) {
 						Column(Modifier.width(0x40.dp)) {
 							OutlinedSpace(Modifier.weight(1F)) {
 								Box {
-									Text(tzuih.codePointAt(0x0).toString(0x10).uppercase(), Modifier
-										.align(Alignment.Center)
-										.padding(0x4.dp),
+									Text(
+										tzuih.codePointAt(0x0).toString(0x10).uppercase(),
+										Modifier
+											.align(Alignment.Center)
+											.padding(0x4.dp),
 									)
 								}
 							}
-							OutlinedKey(KeyContent(tzuih), Modifier.weight(2F),
+							OutlinedKey(
+								KeyContent(tzuih), Modifier.weight(2F),
 								movedThreshold = 0F,
 							) {
 								tzhuList[tzhuIndex] = tzhuList[tzhuIndex].first to tzuihIndex
@@ -218,11 +225,13 @@ private fun OptionsComposable() {
 		}
 	}
 
-	val importFilesEndReceiver = remember { object : BroadcastReceiver() {
-		override fun onReceive(context: Context?, intent: Intent?) {
-			deleteTzhuComposer()
+	val importFilesEndReceiver = remember {
+		object : BroadcastReceiver() {
+			override fun onReceive(context: Context?, intent: Intent?) {
+				deleteTzhuComposer()
+			}
 		}
-	} }
+	}
 	LaunchedEffect(Unit) {
 		ims.registerContextBroadcastReceiver(
 			importFilesEndReceiver,
@@ -230,9 +239,10 @@ private fun OptionsComposable() {
 		)
 	}
 	fun importFiles() {
-		ims.startActivity(Intent(ims, MainActivity::class.java)
-			.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-			.putExtra("import_files", true)
+		ims.startActivity(
+			Intent(ims, MainActivity::class.java)
+				.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+				.putExtra("import_files", true),
 		)
 	}
 
@@ -248,29 +258,32 @@ private fun OptionsComposable() {
 
 	CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
 		Column {
-			OutlinedSpace(Modifier
-				.weight(2F)
-				.verticalScroll(rememberScrollState()),
+			OutlinedSpace(
+				Modifier
+					.weight(2F)
+					.verticalScroll(rememberScrollState()),
 			) {
-				Text(remember { buildString {
-					VwinngjuanIms.instance?.externalFilesDir?.toPath()?.let { it / "vwinngjuan" }?.also { vwinngjuanDirPath ->
-						fun ByteArray.toHumanFriendlyString() = bigIntegerToString()
-							.windowedSequence(0x10, 0x10)
-							.joinToString("\n")
-						(vwinngjuanDirPath / "lej.tsv").let { path ->
-							appendLine("sha256sum ${path.name}:\n${path.takeIf { it.exists() }?.getSha256Sum()?.toHumanFriendlyString()}")
-						}
-						(vwinngjuanDirPath / "lej.tsv.sha256").let { path ->
-							appendLine("${path.name}:\n${path.takeIf { it.exists() }?.readBytes()?.toHumanFriendlyString()}")
-						}
-						(vwinngjuanDirPath / "tzhu-tree.bin").let { path ->
-							appendLine("sha256sum ${path.name}:\n${path.takeIf { it.exists() }?.getSha256Sum()?.toHumanFriendlyString()}")
-						}
-						(vwinngjuanDirPath / "tzhu-tree.bin.sha256").let { path ->
-							appendLine("${path.name}:\n${path.takeIf { it.exists() }?.readBytes()?.toHumanFriendlyString()}")
+				Text(remember {
+					buildString {
+						VwinngjuanIms.instance?.externalFilesDir?.toPath()?.let { it / "vwinngjuan" }?.also { vwinngjuanDirPath ->
+							fun ByteArray.toHumanFriendlyString() = bigIntegerToString()
+								.windowedSequence(0x10, 0x10)
+								.joinToString("\n")
+							(vwinngjuanDirPath / "lej.tsv").let { path ->
+								appendLine("sha256sum ${path.name}:\n${path.takeIf { it.exists() }?.getSha256Sum()?.toHumanFriendlyString()}")
+							}
+							(vwinngjuanDirPath / "lej.tsv.sha256").let { path ->
+								appendLine("${path.name}:\n${path.takeIf { it.exists() }?.readBytes()?.toHumanFriendlyString()}")
+							}
+							(vwinngjuanDirPath / "tzhu-tree.bin").let { path ->
+								appendLine("sha256sum ${path.name}:\n${path.takeIf { it.exists() }?.getSha256Sum()?.toHumanFriendlyString()}")
+							}
+							(vwinngjuanDirPath / "tzhu-tree.bin.sha256").let { path ->
+								appendLine("${path.name}:\n${path.takeIf { it.exists() }?.readBytes()?.toHumanFriendlyString()}")
+							}
 						}
 					}
-				} }, textAlign = TextAlign.Center)
+				}, textAlign = TextAlign.Center)
 			}
 			Row(Modifier.weight(1F)) {
 				OutlinedKey(KeyContent(Icons.AutoMirrored.Filled.ArrowBack), Modifier.weight(1F)) {
@@ -292,11 +305,13 @@ private fun OptionsComposable() {
 				OutlinedKey(KeyContent("終\n止"), Modifier.weight(1F)) {
 					exitProcess(0x0)
 				}
-				OutlinedKey(KeyContent("斷\n冈"), Modifier.weight(1F).run { if (networkSyncing) {
-					this
-				} else {
-					border(0x1.dp, Color.hsl(0F, 0F, 0.5F))
-				} }) {
+				OutlinedKey(KeyContent("斷\n冈"), Modifier.weight(1F).run {
+					if (networkSyncing) {
+						this
+					} else {
+						border(0x1.dp, Color.hsl(0F, 0F, 0.5F))
+					}
+				}) {
 					toggleNetworkThrottling()
 					quitOptionsComposable()
 				}
@@ -310,44 +325,47 @@ internal var usingSpecials by mutableStateOf(false)
 @Composable
 private fun TzuihSpecialsComposable() {
 	CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-		SpecialsComposable(remember { listOf(
-			SpecialsCategory("注\n音", buildList {
-				addAll(('ㄅ' .. 'ㄯ').map { SpecialsItem(it) })
-				addAll(('ㆠ' .. 'ㆿ').map { SpecialsItem(it) })
-			}),
-			SpecialsCategory("僞\n康", buildList {
-				addAll(('⼀' .. '⿕').map { SpecialsItem(it) })
-			}),
-			SpecialsCategory("述\n字", buildList {
-				addAll(('⿰' .. '⿿').map { SpecialsItem(it) })
-				addAll(('〾' .. '〿').map { SpecialsItem(it) })
-			}),
-			SpecialsCategory("文\n法", buildList {
-				addAll(('　' .. '】').map { SpecialsItem(it) })
-				addAll(('〔' .. '〟').map { SpecialsItem(it) })
-				add(SpecialsItem('〰'))
-				addAll(('︰' .. '﹏').map { SpecialsItem(it) })
-			}),
-			SpecialsCategory("直\n書", buildList {
-				addAll(('︐' .. '︙').map { SpecialsItem(it) })
-			}),
-			SpecialsCategory("序\n號", buildList {
-				addAll(('㈠' .. '㍰').map { SpecialsItem(it) })
-				addAll(('㍺' .. '㍿').map { SpecialsItem(it) })
-				addAll(('㏠' .. '㏾').map { SpecialsItem(it) })
-			}),
-			SpecialsCategory("單\n位", buildList {
-				addAll(('㍱' .. '㍹').map { SpecialsItem(it) })
-				addAll(('㎀' .. '㏟').map { SpecialsItem(it) })
-				addAll(('㏿' .. '㏿').map { SpecialsItem(it) })
-			}),
-		) })
+		SpecialsComposable(remember {
+			listOf(
+				SpecialsCategory("注\n音", buildList {
+					addAll(('ㄅ' .. 'ㄯ').map { SpecialsItem(it) })
+					addAll(('ㆠ' .. 'ㆿ').map { SpecialsItem(it) })
+				}),
+				SpecialsCategory("僞\n康", buildList {
+					addAll(('⼀' .. '⿕').map { SpecialsItem(it) })
+				}),
+				SpecialsCategory("述\n字", buildList {
+					addAll(('⿰' .. '⿿').map { SpecialsItem(it) })
+					addAll(('〾' .. '〿').map { SpecialsItem(it) })
+				}),
+				SpecialsCategory("文\n法", buildList {
+					addAll(('　' .. '】').map { SpecialsItem(it) })
+					addAll(('〔' .. '〟').map { SpecialsItem(it) })
+					add(SpecialsItem('〰'))
+					addAll(('︰' .. '﹏').map { SpecialsItem(it) })
+				}),
+				SpecialsCategory("直\n書", buildList {
+					addAll(('︐' .. '︙').map { SpecialsItem(it) })
+				}),
+				SpecialsCategory("序\n號", buildList {
+					addAll(('㈠' .. '㍰').map { SpecialsItem(it) })
+					addAll(('㍺' .. '㍿').map { SpecialsItem(it) })
+					addAll(('㏠' .. '㏾').map { SpecialsItem(it) })
+				}),
+				SpecialsCategory("單\n位", buildList {
+					addAll(('㍱' .. '㍹').map { SpecialsItem(it) })
+					addAll(('㎀' .. '㏟').map { SpecialsItem(it) })
+					addAll(('㏿' .. '㏿').map { SpecialsItem(it) })
+				}),
+			)
+		})
 	}
 }
 
 private var updatingTzhuComposerTrigger by mutableIntStateOf(0x0)
 
-internal val vwinngjuanPlane = Plane({ stringResource(R.string.vwinngjuan_plane) },
+internal val vwinngjuanPlane = Plane(
+	{ stringResource(R.string.vwinngjuan_plane) },
 	onFinishInput = { savedTzhuComposer?.vwinStack?.clear() },
 	onWindowHidden = { savedTzhuComposer?.vwinStack?.clear() },
 ) {
@@ -401,21 +419,26 @@ internal val vwinngjuanPlane = Plane({ stringResource(R.string.vwinngjuan_plane)
 			BackspaceKey(Modifier.weight(2F))
 		}
 		val e = creatingTzhuComposerException
+
 		@Composable
 		fun ExceptionContent(text: String) {
-			OutlinedSpace(Modifier
-				.weight(4F)
-				.verticalScroll(rememberScrollState()),
+			OutlinedSpace(
+				Modifier
+					.weight(4F)
+					.verticalScroll(rememberScrollState()),
 			) {
 				Text(text, textAlign = TextAlign.Center)
 			}
 		}
 		when {
 			e != null -> ExceptionContent(e.stackTraceToString())
-			vwinngjuanResourceName != null -> ExceptionContent("""
-				下載$vwinngjuanResourceName
-				${Formatter.formatFileSize(ims, vwinngjuanResourceDownloaded)}
-			""".trimIndent())
+			vwinngjuanResourceName != null -> ExceptionContent(
+				"""
+					下載$vwinngjuanResourceName
+					${Formatter.formatFileSize(ims, vwinngjuanResourceDownloaded)}
+				""".trimIndent(),
+			)
+
 			tzhuComposer == null -> ExceptionContent("組樹: ${null}.")
 			else -> {
 				Row(Modifier.weight(1F)) {
@@ -441,8 +464,11 @@ internal val vwinngjuanPlane = Plane({ stringResource(R.string.vwinngjuan_plane)
 						val leadingSpacesNumber = max(candidateNumber - tzuihList.size, 0x0) / 0x2
 						for (tzuihIndex in 0x0 ..< candidateNumber) {
 							tzuihList.getOrNull(tzuihIndex - leadingSpacesNumber)?.let { (color, tzuih) ->
-								OutlinedKey(KeyContent(tzuih), Modifier.weight(1F)
-									.border(0x1.dp, color),
+								OutlinedKey(
+									KeyContent(tzuih),
+									Modifier
+										.weight(1F)
+										.border(0x1.dp, color),
 								) {
 									commitText(tzuih)
 									vwinStack.clear()
